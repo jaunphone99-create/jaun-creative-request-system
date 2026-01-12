@@ -8,7 +8,7 @@ const CONFIG = {
 
   // URL ของ Google Apps Script Web App ที่ deploy แล้ว
   // ได้จากขั้นตอน Deploy > New deployment > Web app URL
-  API_URL: 'https://script.google.com/macros/s/AKfycbzULpzPVV_Gtp6ttAgADp-mKKrE9ngXE5x9t9oPtxrgIs-qc2wFnrxizlH32siepKgA/exec',
+    API_URL: 'https://script.google.com/macros/s/AKfycbx5aQfEa_tdtOec69pesbIRBGw7VcAe7PdiH5FhrLCoz_pyEgJfGtT4HShX8cR2dJui/exec',
 
   // Google OAuth Client ID
   // ได้จาก Google Cloud Console > APIs & Services > Credentials
