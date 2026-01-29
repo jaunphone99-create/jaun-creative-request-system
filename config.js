@@ -21,10 +21,7 @@ const CONFIG = {
 
   // ==================== Super Admin Emails ====================
   // อีเมลเหล่านี้จะเป็น Super Admin อัตโนมัติ
-  SUPER_ADMIN_EMAILS: [
-    'sanalohit01@gmail.com',
-    'jaunphone.99@gmail.com'
-  ],
+  SUPER_ADMIN_EMAILS: 
 
   // ==================== Admin Emails ====================
   // อีเมลเหล่านี้จะเป็น Admin (จัดการคำขอแต่ไม่มีสิทธิ์ Super Admin)
