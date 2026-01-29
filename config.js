@@ -29,8 +29,9 @@ const CONFIG = {
   // ==================== Admin Emails ====================
   // อีเมลเหล่านี้จะเป็น Admin (จัดการคำขอแต่ไม่มีสิทธิ์ Super Admin)
   ADMIN_EMAILS: [
-    'jaunpowercilp@gmail.com'
-  ],
+  'jaunpowercilp@gmail.com',
+  'loveininor@gmail.com'
+];
 
   // Domain ที่จะเป็น Admin อัตโนมัติ
   ADMIN_DOMAIN: '@jaun.com',
