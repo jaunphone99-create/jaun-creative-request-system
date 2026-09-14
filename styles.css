@@ -1752,3 +1752,252 @@ a:hover {
   .deadline-date  { justify-content: flex-start; }
   .deadline-item .btn { grid-area: 2 / 3; }
 }
+
+/* ==================== สรุปผลการทำงาน (Dashboard) ====================
+   แทนกราฟ 4 ช่องแบบเดิมที่เป็นการนับจำนวนล้วนๆ
+   หลักที่ยึด: ทุกตัวเลขต้องบอกด้วยว่าคิดจากกี่รายการ
+   เพราะบางตัวชี้วัดคิดได้จากข้อมูลบางส่วนเท่านั้น ถ้าไม่บอกจะเข้าใจผิดว่าวัดครบทั้งระบบ */
+
+.insight-card > .card-header {
+  background: var(--jaun-navy);
+  border-radius: var(--radius-md);
+  border-bottom: 0;
+  padding: 12px 16px;
+}
+
+.insight-card > .card-header .card-title { color: var(--jaun-white); display: flex; align-items: center; gap: 8px; }
+.insight-card > .card-header .card-title .icon { color: var(--jaun-orange); margin-right: 0; }
+
+/* ---------- การ์ดตัวเลขหลัก ---------- */
+
+.kpi-grid {
+  display: grid;
+  /* กำหนดจำนวนช่องตายตัว ไม่ใช้ auto-fit เพราะการ์ดใบแรกกว้างกว่าใบอื่น
+     พอ auto-fit คำนวณเองแล้วจะเหลือช่องว่างค้างท้ายแถว */
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.kpi-tile {
+  background: var(--jaun-white);
+  border: 1px solid #E5E7EB;
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ใบแรกเน้นด้วยเส้นส้ม เพราะเป็นตัวเลขที่ต้องลงมือทำอะไรสักอย่าง ไม่ใช่แค่รับรู้ */
+.kpi-tile-wide { border-left: 5px solid var(--jaun-orange); }
+
+/* เส้นประ = ตัวเลขนี้คิดจากข้อมูลบางส่วน อ่านเป็นภาพรวมทั้งบริษัทไม่ได้ */
+.kpi-tile-partial { border-style: dashed; border-width: 2px; border-color: #D6D3D1; }
+
+.kpi-label { font-size: 0.85rem; color: var(--color-medium-grey); font-weight: 500; }
+
+.kpi-value {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 2.1rem;
+  line-height: 1.15;
+  color: var(--jaun-navy);
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.kpi-unit { font-size: 0.95rem; font-weight: 600; color: var(--color-medium-grey); }
+.kpi-good { color: var(--color-success); }
+.kpi-bad  { color: var(--color-danger); }
+.kpi-flat { color: var(--jaun-navy); }
+
+.kpi-sub { font-size: 0.85rem; color: var(--jaun-dark-text); overflow-wrap: anywhere; }
+
+.kpi-coverage {
+  font-size: 0.75rem;
+  color: var(--color-medium-grey);
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 8px;
+  overflow-wrap: anywhere;
+}
+
+.kpi-coverage .icon { width: 0.85rem; height: 0.85rem; flex-shrink: 0; margin-top: 2px; }
+
+/* ---------- กล่องเนื้อหาแต่ละส่วน ---------- */
+
+.panel {
+  background: var(--jaun-white);
+  border: 1px solid #E5E7EB;
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.panel-head { margin-bottom: 14px; }
+.panel-head h3 {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: var(--jaun-navy);
+  margin: 0 0 3px;
+  overflow-wrap: anywhere;
+}
+.panel-note { font-size: 0.82rem; color: var(--color-medium-grey); margin: 0; overflow-wrap: anywhere; }
+.panel-sub { font-size: 0.85rem; font-weight: 600; color: var(--jaun-dark-text); margin: 18px 0 8px; }
+.panel-foot { font-size: 0.75rem; color: var(--color-medium-grey); margin: 12px 0 0; overflow-wrap: anywhere; }
+.panel-empty { text-align: center; color: var(--color-medium-grey); padding: 20px 0; margin: 0; }
+.panel-chart { height: 300px; }
+
+.panel-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.panel-pair .panel { margin-bottom: 0; }
+
+/* ---------- แถบอายุงานค้าง ---------- */
+
+.agebar { display: flex; height: 34px; border-radius: var(--radius-md); overflow: hidden; gap: 2px; }
+
+.agebar-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  transition: flex var(--transition-fast);
+}
+
+.agebar-n { color: #FFFFFF; font-weight: 700; font-size: 0.85rem; }
+
+.agebar-key { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; }
+.agebar-key-item { font-size: 0.8rem; color: var(--color-medium-grey); display: flex; align-items: center; gap: 6px; }
+.agebar-key-item strong { color: var(--jaun-dark-text); }
+.agebar-dot { width: 10px; height: 10px; border-radius: var(--radius-full); flex-shrink: 0; }
+
+/* ---------- รายการงานค้างนานสุด ---------- */
+
+.stuck-list { list-style: none; padding: 0; margin: 0; }
+
+.stuck-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--jaun-light-gray);
+  margin-bottom: 6px;
+}
+
+.stuck-item:last-child { margin-bottom: 0; }
+
+.stuck-days {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--color-warning);
+  min-width: 58px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.stuck-days small { font-size: 0.7rem; font-weight: 500; margin-left: 2px; }
+.stuck-days-bad { color: var(--color-danger); }
+
+.stuck-body { flex: 1; min-width: 0; }
+.stuck-name { display: block; font-weight: 600; color: var(--jaun-dark-text); overflow-wrap: anywhere; }
+.stuck-meta { display: block; font-size: 0.8rem; color: var(--color-medium-grey); overflow-wrap: anywhere; }
+
+/* ---------- ตารางบริการ ---------- */
+
+.svc-table { display: flex; flex-direction: column; gap: 2px; }
+
+.svc-head, .svc-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 2fr) 1fr 1fr 0.7fr 0.7fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+}
+
+.svc-head {
+  font-size: 0.75rem;
+  color: var(--color-medium-grey);
+  font-weight: 600;
+  padding-bottom: 4px;
+}
+
+.svc-head span:not(:first-child), .svc-row span:not(:first-child) { text-align: right; }
+
+.svc-row { border-radius: var(--radius-md); background: var(--jaun-light-gray); font-size: 0.9rem; }
+.svc-row strong { font-family: var(--font-heading); font-size: 1rem; color: var(--jaun-navy); }
+.svc-row small { font-size: 0.72rem; color: var(--color-medium-grey); margin-left: 3px; }
+
+.svc-name { font-weight: 600; color: var(--jaun-dark-text); overflow-wrap: anywhere; }
+
+/* แถบสัดส่วนบางๆ ใต้ชื่อ แทนที่จะเป็นกราฟแท่งแยกอีกอัน */
+.svc-track { display: block; height: 4px; background: #DDD9D7; border-radius: var(--radius-full); margin-top: 5px; overflow: hidden; }
+.svc-fill { display: block; height: 100%; background: var(--jaun-support-blue); border-radius: var(--radius-full); }
+
+/* เข้มกว่าโทนมาตรฐาน เพราะสองคลาสนี้วางอยู่บนแถวพื้นเทาอ่อน (#EAE8E7)
+   ซึ่งโทนเดิมได้ความคมชัดแค่ 3.93:1 / 3.95:1 ต่ำกว่าเกณฑ์ 4.5:1
+   โทนใหม่ผ่านทั้งบนพื้นเทาและพื้นขาว จึงใช้ซ้ำในกล่องอื่นได้ */
+.val-bad  { color: #B32424; font-weight: 600; }
+.val-good { color: #066B4A; font-weight: 600; }
+
+/* ---------- รายการจัดอันดับ ---------- */
+
+.rank-list { list-style: none; padding: 0; margin: 0; }
+.rank-row { margin-bottom: 14px; }
+.rank-row:last-child { margin-bottom: 0; }
+
+.rank-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 5px; }
+.rank-name { font-weight: 600; font-size: 0.9rem; color: var(--jaun-dark-text); overflow-wrap: anywhere; }
+
+.rank-value {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--jaun-navy);
+  flex-shrink: 0;
+}
+
+.rank-value small { font-size: 0.72rem; font-weight: 500; color: var(--color-medium-grey); }
+
+.rank-track { height: 10px; background: #DDD9D7; border-radius: var(--radius-full); overflow: hidden; }
+.rank-fill { height: 100%; border-radius: var(--radius-full); }
+.rank-detail { font-size: 0.78rem; color: var(--color-medium-grey); margin-top: 5px; overflow-wrap: anywhere; }
+
+@media (max-width: 1000px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 860px) {
+  .panel-pair { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  /* ตารางบริการแคบเกินกว่าจะวาง 5 คอลัมน์ จึงยุบเป็น 2 คอลัมน์
+     ชื่อบริการกินเต็มแถวบน ตัวเลขไหลลงแถวล่าง */
+  .svc-head { display: none; }
+  .svc-row { grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+  .svc-name { grid-column: 1 / -1; }
+  .svc-row span:not(:first-child) { text-align: left; font-size: 0.85rem; }
+  .svc-row span:not(:first-child)::before { color: var(--color-medium-grey); font-size: 0.72rem; }
+  .svc-row span:nth-child(2)::before { content: 'จำนวน '; }
+  .svc-row span:nth-child(3)::before { content: 'เวลาทำ '; }
+  .svc-row span:nth-child(4)::before { content: 'ตีกลับ '; }
+  .svc-row span:nth-child(5)::before { content: 'ค้าง '; }
+  .kpi-value { font-size: 1.8rem; }
+  .panel-chart { height: 260px; }
+
+  /* จอแคบ: ให้ชื่องานได้เต็มความกว้าง ไม่งั้นเหลือ 77px แล้วตัดคำไทยกลางคำ */
+  .stuck-item { flex-wrap: wrap; row-gap: 8px; }
+  .stuck-body { flex: 1 1 100%; order: 3; }
+  .stuck-days { min-width: 0; text-align: left; }
+  /* ขนาดตัวอักษรต้องไม่ต่ำกว่า 18.66px ที่ตัวหนา ไม่งั้นเกณฑ์ความคมชัดเปลี่ยนจาก 3:1 เป็น 4.5:1 */
+  .stuck-days { font-size: 1.2rem; }
+}

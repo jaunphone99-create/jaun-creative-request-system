@@ -788,26 +788,13 @@ const Pages = {
               </div>
             </div>
             
-            <!-- Analytics Charts Section -->
-            <div class="card mb-lg">
+            <!-- สรุปผลการทำงาน -->
+            <div class="card mb-lg insight-card">
               <div class="card-header">
-                <h2 class="card-title">${Icons.get('chart')} Analytics Dashboard</h2>
+                <h2 class="card-title">${Icons.get('chart')} สรุปผลการทำงาน</h2>
               </div>
               <div class="card-body">
-                <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-                  <div class="chart-container" style="background: var(--color-light-grey); border-radius: 12px; padding: 16px; height: 280px;">
-                    <canvas id="chart-requests-by-day"></canvas>
-                  </div>
-                  <div class="chart-container" style="background: var(--color-light-grey); border-radius: 12px; padding: 16px; height: 280px;">
-                    <canvas id="chart-requests-by-service"></canvas>
-                  </div>
-                  <div class="chart-container" style="background: var(--color-light-grey); border-radius: 12px; padding: 16px; height: 280px;">
-                    <canvas id="chart-requests-by-dept"></canvas>
-                  </div>
-                  <div class="chart-container" style="background: var(--color-light-grey); border-radius: 12px; padding: 16px; height: 280px;">
-                    <canvas id="chart-requests-by-status"></canvas>
-                  </div>
-                </div>
+                ${typeof Charts !== 'undefined' ? Charts.dashboardHtml(this.allRequests) : ''}
               </div>
             </div>
           ` : ''}
@@ -859,7 +846,7 @@ const Pages = {
     // Render charts if Super Admin
     const user = Auth.getUser();
     if (Auth.isSuperAdmin(user.email) && typeof Charts !== 'undefined') {
-      Charts.renderAll(this.allRequests, this.allUsers);
+      Charts.renderAll(this.allRequests);
     }
   },
 
