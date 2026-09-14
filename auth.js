@@ -35,7 +35,10 @@ const Auth = {
             theme: 'outline',
             size: 'large',
             text: 'signin_with',
-            shape: 'rectangular',
+            /* pill = ขอบมนเต็ม ปุ่มนี้เป็น iframe ของ Google จึงแต่งด้วย CSS ไม่ได้
+               ต้องสั่งผ่านตัวเลือกของ Google เอง (ถ้าครอบขอบจากข้างนอก
+               iframe กว้างเกินกรอบข้างละ 10px ขอบซ้าย-ขวาจะถูกตัดเป็นเส้นตรง) */
+            shape: 'pill',
             logo_alignment: 'left',
             width: 356   // ให้เต็มความกว้างการ์ด (เพดานของ Google คือ 400)
         });

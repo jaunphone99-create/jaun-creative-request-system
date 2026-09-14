@@ -372,6 +372,9 @@ a:hover {
   color: var(--color-dark);
   border: 2px solid #E5E7EB;
   padding: var(--spacing-md) var(--spacing-xl);
+  /* ให้ขอบมนเท่าปุ่มจริงของ Google (shape: 'pill') เพราะปุ่มนี้คือตัวสำรอง
+     ที่ขึ้นมาแทนกันตอนสคริปต์ Google โหลดไม่ขึ้น */
+  border-radius: var(--radius-full);
 }
 
 .btn-google:hover:not(:disabled) {
