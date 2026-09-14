@@ -5,34 +5,59 @@
  */
 
 /* ===================== FONTS ===================== */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap');
+/* ฟอนต์ละติน: Montserrat (หัวข้อ) + Poppins (เนื้อความ)
+   ฟอนต์ไทย: Kanit (หัวข้อ) + Prompt (เนื้อความ)
+   ทั้งสองคู่ออกแบบให้สัดส่วนเข้ากัน โหลดเฉพาะน้ำหนักที่ใช้จริง (400-800) */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Kanit:wght@500;600;700;800&family=Prompt:wght@400;500;600;700&display=swap');
 
 /* ===================== CSS VARIABLES ===================== */
 :root {
   /* Primary Colors */
-  --color-navy-blue: #1B2A5C;
-  --color-cerulean-blue: #45ABC5;
-  --color-light-sky-blue: #48DBFF;
+  /* ===== สีแบรนด์ตาม JAUN CI Book ===== */
+  --jaun-navy: #0B1E41;          /* JAUN Navy - สีหลัก สัดส่วน 25% */
+  --jaun-orange: #F86E0B;        /* JAUN Orange - สีเน้น สัดส่วน 10% */
+  --jaun-support-blue: #21417E;  /* Support Blue */
+  --jaun-light-gray: #EAE8E7;    /* Light Gray */
+  --jaun-white: #FBFBFB;         /* White - สัดส่วน 60% */
+  --jaun-dark-text: #101828;     /* Dark Text */
 
-  /* Accent Colors */
-  --color-burnt-orange: #E56905;
-  --color-vibrant-orange: #FF7F00;
+  /* ===== สีเสริม (CI กำหนดโควตา Support Colors 5%) =====
+     CI ให้สีมา 6 สี แต่ระบบต้องแยกประเภทบริการ 5 ชนิด
+     จึงไล่เฉดเพิ่มจากสีในชุด ไม่ได้หยิบสีนอกแบรนด์มาใช้ */
+  --jaun-light-blue: #3A63B8;    /* ไล่จาก Support Blue - ใช้กับงานถ่ายภาพ */
+  --jaun-orange-dark: #C35608;   /* ไล่จาก JAUN Orange - ใช้ตอน hover */
 
-  /* Neutral Colors */
-  --color-medium-grey: #A9A9A9;
-  --color-light-grey: #F3F4F6;
-  --color-white: #FFFFFF;
-  --color-dark: #1F2937;
+  /* ===== ชื่อเดิม =====
+     ชี้มาที่สี CI เพื่อให้โค้ดเดิมทั้งหมดใช้งานต่อได้โดยไม่ต้องแก้ */
+  --color-navy-blue: var(--jaun-navy);
+  --color-cerulean-blue: var(--jaun-support-blue);
+  --color-light-sky-blue: var(--jaun-light-blue);
+  --color-burnt-orange: var(--jaun-orange);
+  --color-vibrant-orange: var(--jaun-orange);
 
-  /* Semantic Colors */
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --color-info: #3B82F6;
+  /* เดิมเป็น #A9A9A9 ซึ่งบนพื้นขาวได้ความคมชัดแค่ 2.6:1 (ต่ำกว่าเกณฑ์ 4.5:1)
+     เปลี่ยนเป็นเทาเข้มขึ้นให้อ่านออกจริง โดยเฉพาะบนมือถือกลางแดด */
+  --color-medium-grey: #616774;
+  --color-light-grey: var(--jaun-light-gray);
+  --color-white: var(--jaun-white);
+  --color-dark: var(--jaun-dark-text);
+
+  /* สีบอกสถานะ - ไม่ได้อยู่ใน CI เพราะสื่อความหมาย (เขียว=สำเร็จ แดง=ปฏิเสธ)
+     ถ้าเปลี่ยนเป็นสีแบรนด์จะแยกสถานะไม่ออก */
+  /* ปรับให้เข้มพอที่ตัวหนังสือสีขาวบนปุ่มจะอ่านออก (เกณฑ์ 4.5:1)
+     ค่าเดิมได้แค่ เขียว 2.54:1 / เหลือง 2.15:1 / แดง 3.76:1 */
+  --color-success: #0A825B;
+  --color-warning: #A06606;
+  --color-danger: #D03B3B;
+  --color-info: var(--jaun-support-blue);
 
   /* Fonts */
-  --font-heading: 'Montserrat', sans-serif;
-  --font-body: 'Poppins', sans-serif;
+  /* ลำดับสำคัญ: ฟอนต์ละตินต้องมาก่อน
+     ตัวอักษรอังกฤษจะใช้ Montserrat/Poppins ส่วนภาษาไทยซึ่งฟอนต์พวกนี้ไม่มี
+     จะไหลไปใช้ Kanit/Prompt แทน (เดิมไหลไปใช้ฟอนต์ default ของแต่ละเครื่อง
+     ทำให้หน้าตาเว็บไม่เหมือนกันใน Mac / Windows / Android) */
+  --font-heading: 'Montserrat', 'Kanit', sans-serif;
+  --font-body: 'Poppins', 'Prompt', sans-serif;
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -158,13 +183,45 @@ a:hover {
 }
 
 /* ===================== HEADER ===================== */
+/* แถบด้านบน - ยึดแนวทาง CI Book: พื้นน้ำเงิน ลายทแยงส้มที่มุม เส้นส้มคาดล่าง
+   สัดส่วนสีเป็นไปตามที่ CI กำหนด คือน้ำเงินเป็นพื้น ส้มเป็นแค่ accent */
 .header {
-  background: var(--color-white);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(118deg,
+    var(--jaun-navy) 0%,
+    var(--jaun-navy) 52%,
+    var(--jaun-support-blue) 100%);
+  border-bottom: 3px solid var(--jaun-orange);
   padding: var(--spacing-md) 0;
   position: sticky;
   top: 0;
   z-index: 100;
+  overflow: hidden;
+}
+
+/* ลายทแยงมุมขวา ล้อลายมุมกระดาษใน CI Book
+   วางเป็นพื้นหลังล้วน ไม่รับคลิก จึงไม่บังปุ่มออกจากระบบ */
+.header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 120px;
+  pointer-events: none;
+  /* ชิดขอบขวาสุดและจางลง เพื่อไม่ให้พาดทับปุ่มจนอ่านยาก
+     เป็นแค่ลวดลายประกอบ ไม่ได้สื่อความหมาย จึงไม่ต้องผ่านเกณฑ์ความคมชัด */
+  background: linear-gradient(104deg,
+    transparent 0 30%,
+    rgba(248, 110, 11, 0.55) 30% 40%,
+    transparent 40% 56%,
+    rgba(251, 251, 251, 0.10) 56% 74%,
+    transparent 74%);
+}
+
+/* เนื้อหาต้องลอยเหนือลายทแยง */
+.header .container {
+  position: relative;
+  z-index: 1;
 }
 
 .header-inner {
@@ -190,7 +247,15 @@ a:hover {
   font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--color-navy-blue);
+  color: var(--jaun-white);
+  letter-spacing: 0.01em;
+}
+
+/* บรรทัดรองใต้ชื่อบริษัท */
+.header-subtitle {
+  font-size: 0.75rem;
+  color: rgba(251, 251, 251, 0.72);
+  letter-spacing: 0.04em;
 }
 
 .header-user {
@@ -205,12 +270,16 @@ a:hover {
 
 .header-user-name {
   font-weight: 600;
-  color: var(--color-navy-blue);
+  color: var(--jaun-white);
 }
 
 .header-user-role {
   font-size: 0.85rem;
-  color: var(--color-medium-grey);
+  color: rgba(251, 251, 251, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
 }
 
 .header-avatar {
@@ -270,17 +339,21 @@ a:hover {
 }
 
 .btn-success:hover:not(:disabled) {
-  background: #0ea570;
+  background: #09724F;   /* เข้มกว่า --color-success */
   transform: translateY(-2px);
 }
 
 .btn-warning {
-  background: var(--color-burnt-orange);
-  color: var(--color-white);
+  background: var(--jaun-orange);
+  /* ตัวหนังสือขาวบนพื้นส้มได้ความคมชัดแค่ 2.91:1 (ต่ำกว่าเกณฑ์)
+     ใช้ตัวหนังสือสีเข้มแทนได้ 6.11:1 โดยไม่ต้องเพี้ยนสีแบรนด์ */
+  color: var(--jaun-dark-text);
+  font-weight: 600;
 }
 
 .btn-warning:hover:not(:disabled) {
-  background: #cc5e04;
+  background: var(--jaun-orange-dark);
+  color: var(--jaun-white);
   transform: translateY(-2px);
 }
 
@@ -290,7 +363,7 @@ a:hover {
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #dc2626;
+  background: #B63434;   /* เข้มกว่า --color-danger */
   transform: translateY(-2px);
 }
 
@@ -428,29 +501,32 @@ a:hover {
   border-radius: var(--radius-full);
 }
 
+/* ป้ายสถานะ - ต้องตรงกับ CONFIG.STATUS_CONFIG ใน config.js เสมอ
+   ตัวเลขในวงเล็บคือความคมชัดเทียบกับพื้นหลัง (เกณฑ์ 4.5:1)
+   ของเดิมต่ำกว่าเกณฑ์เกือบทุกตัว จึงปรับให้เข้มขึ้น */
 .badge-pending {
   background: #FEF3C7;
-  color: #D97706;
+  color: #A75B04;   /* เดิม #D97706 = 2.86:1 -> 4.55:1 */
 }
 
 .badge-progress {
   background: #DBEAFE;
-  color: #2563EB;
+  color: #21417E;   /* Support Blue จาก CI = 8.11:1 */
 }
 
 .badge-revision {
   background: #FFEDD5;
-  color: #EA580C;
+  color: #B24F07;   /* ไล่จาก JAUN Orange, เดิม 3.11:1 -> 4.57:1 */
 }
 
 .badge-completed {
   background: #D1FAE5;
-  color: #059669;
+  color: #047C57;   /* เดิม #059669 = 3.32:1 -> 4.60:1 */
 }
 
 .badge-rejected {
   background: #FEE2E2;
-  color: #DC2626;
+  color: #CA2222;   /* เดิม #DC2626 = 3.95:1 -> 4.57:1 */
 }
 
 /* ===================== FORMS ===================== */
@@ -539,8 +615,46 @@ a:hover {
 }
 
 .service-icon {
+  /* ยังรองรับอิโมจิอยู่ เผื่อบริการไหนไม่มี iconSvg */
   font-size: 3rem;
+  line-height: 1;
   margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* วงกลมพื้นอ่อนหลังไอคอน ใช้สีของบริการนั้นแบบจางๆ
+   currentColor คือสีที่ส่งมาจาก service.color จึงเปลี่ยนตามบริการเอง */
+.service-icon:has(svg) {
+  width: 76px;
+  height: 76px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  transition: background var(--transition-normal), transform var(--transition-normal);
+}
+
+.service-icon svg {
+  width: 38px;
+  height: 38px;
+}
+
+.service-card:hover .service-icon:has(svg) {
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  transform: scale(1.06);
+}
+
+/* ขนาดกลาง ใช้ตอนเลือกบริการแล้ว */
+.service-icon-md {
+  display: inline-flex;
+  align-items: center;
+}
+
+.service-icon-md svg {
+  width: 30px;
+  height: 30px;
 }
 
 .service-name {
@@ -581,7 +695,21 @@ a:hover {
 }
 
 .request-icon {
-  font-size: 2rem;
+  font-size: 2rem;   /* ใช้ตอนเป็นอิโมจิ */
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.request-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.request-icon-sm svg {
+  width: 17px;
+  height: 17px;
+  vertical-align: -3px;
 }
 
 .request-title {
@@ -639,14 +767,17 @@ a:hover {
 
 .alert-warning {
   background: #FFF7ED;
-  border-left-color: var(--color-burnt-orange);
-  color: var(--color-burnt-orange);
+  /* เส้นขอบใช้ JAUN Orange เต็มๆ ได้ เพราะเป็นเส้นไม่ใช่ตัวหนังสือ
+     แต่ตัวหนังสือต้องเข้มกว่า ไม่งั้นได้แค่ 2.74:1 อ่านไม่ออกบนพื้นครีม
+     ตรงกับที่ CI บอกว่า "ใช้ส้มเป็น accent ไม่ใช่พื้นหลัง" */
+  border-left-color: var(--jaun-orange);
+  color: #B75108;   /* 4.72:1 */
 }
 
 .alert-danger {
   background: #FEF2F2;
   border-left-color: var(--color-danger);
-  color: var(--color-danger);
+  color: #C73838;   /* เดิม 4.39:1 -> 4.74:1 */
 }
 
 /* ===================== MODAL ===================== */
@@ -810,6 +941,9 @@ a:hover {
   color: var(--color-navy-blue);
   margin-bottom: var(--spacing-md);
   padding-left: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
   border-left: 3px solid var(--color-cerulean-blue);
 }
 
@@ -853,61 +987,345 @@ a:hover {
 }
 
 /* ===================== LOGIN PAGE ===================== */
+/* ===================== หน้าเข้าสู่ระบบ =====================
+   แบ่งสองฝั่ง: ซ้ายแนะนำแบรนด์ ขวาเป็นกล่องเข้าสู่ระบบ
+   ใช้สัดส่วนสีตาม CI คือพื้นสว่างเป็นหลัก น้ำเงินรองลงมา ส้มเป็นแค่จุดเน้น
+
+   หมายเหตุสำคัญ: mockup ต้นแบบวางสัดส่วนไว้โดยคิดว่ามีรูปถ่ายเติมกลางภาพ
+   และการ์ดมีช่องกรอก 4 แถว เมื่อเราไม่มีทั้งสองอย่าง (ล็อกอินด้วย Google อย่างเดียว)
+   การยืดสัดส่วนตามสเปกจะเหลือแต่พื้นที่ว่าง จึงคุมให้กระชับกว่าสเปกโดยตั้งใจ */
 .login-page {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  background: var(--jaun-white);
+}
+
+/* ---------- ฝั่งซ้าย: แบรนด์ ---------- */
+.login-hero {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
+  padding: var(--spacing-2xl) clamp(28px, 5vw, 72px);
+  background:
+    linear-gradient(160deg, var(--jaun-white) 0%, #F1F3F7 55%, #E7EAF0 100%);
+}
+
+/* ลายทแยงมุมซ้ายบน ล้อลายใน CI Book
+   แถบวิ่งจากขอบบนลงไปขอบซ้ายเป็นเส้นยาวต่อเนื่อง ไม่ใช่ก้อนสั้นๆ */
+.login-corner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* กว้างกว่าสูง เพื่อให้แถบทอดยาวไปทางขวามากกว่าลงล่าง
+     ทำให้ดูยาวได้สัดส่วน และพ้นกล่องโลโก้ที่อยู่ต่ำลงมาทางซ้าย
+     (preserveAspectRatio="none" บน SVG จึงยืดตามกล่องได้) */
+  width: clamp(124px, 16vw, 200px);
+  height: clamp(80px, 10vw, 126px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* จุดประมุมขวาล่าง */
+.login-hero::after {
+  content: '';
+  position: absolute;
+  right: 6%;
+  bottom: 8%;
+  width: 150px;
+  height: 90px;
+  background-image: radial-gradient(var(--jaun-support-blue) 1.6px, transparent 1.6px);
+  background-size: 15px 15px;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.login-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+  width: 100%;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: clamp(28px, 5vh, 56px);
+}
+
+.login-brand-logo { width: 52px; height: 52px; flex-shrink: 0; }
+
+.login-brand-name {
+  font-family: var(--font-heading);
+  font-size: 1.28rem;
+  font-weight: 700;
+  color: var(--jaun-navy);
+}
+
+.login-brand-tagline {
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  color: var(--color-medium-grey);
+  margin-top: 2px;
+}
+
+/* เส้นส้มสั้นๆ เหนือหัวเรื่อง */
+.login-rule {
+  display: block;
+  width: 62px;
+  height: 4px;
+  background: var(--jaun-orange);
+  border-radius: 2px;
+  margin-bottom: 22px;
+}
+
+.login-headline h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(2.4rem, 5.4vw, 4.1rem);
+  font-weight: 800;
+  line-height: 1.03;
+  letter-spacing: -0.015em;
+  color: var(--jaun-navy);
+  margin: 0;
+}
+
+.login-headline h1 em {
+  font-style: normal;
+  /* ส้มแบรนด์เต็มๆ บนพื้นสว่างได้ความคมชัดแค่ 2.41:1 ต่ำกว่าเกณฑ์ 3:1 ของตัวใหญ่
+     เฉดเข้มนี้ได้ 3.74:1 และตาแทบแยกไม่ออกเพราะตัวอักษรใหญ่มาก */
+  color: var(--jaun-orange-dark);
+}
+
+.login-headline-th {
+  font-size: clamp(1rem, 1.9vw, 1.3rem);
+  font-weight: 600;
+  color: var(--jaun-navy);
+  margin: 20px 0 0;
+}
+
+/* ---------- คุณค่าสามข้อ ---------- */
+.login-values {
+  list-style: none;
+  display: flex;
+  gap: clamp(18px, 3vw, 38px);
+  margin: clamp(30px, 5vh, 52px) 0 0;
+  padding: 0;
+}
+
+.login-values li {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 18px;
+  border-left: 2px solid rgba(33, 65, 126, 0.18);
+}
+
+.login-values li:first-child { padding-left: 0; border-left: 0; }
+
+.login-value-icon {
+  color: var(--jaun-orange);
+  margin-bottom: 5px;
+}
+
+.login-value-icon .icon { width: 1.55rem; height: 1.55rem; }
+
+.login-value-th {
+  font-weight: 600;
+  color: var(--jaun-navy);
+  font-size: 0.95rem;
+}
+
+.login-value-en {
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  color: var(--color-medium-grey);
+}
+
+.login-quote {
+  margin: clamp(30px, 5vh, 54px) 0 0;
+  padding-left: 16px;
+  border-left: 3px solid var(--jaun-orange);
+  font-size: 0.98rem;
+  font-style: italic;
+  color: var(--color-medium-grey);
+}
+
+/* ---------- ฝั่งขวา: กล่องเข้าสู่ระบบ ---------- */
+.login-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-navy-blue) 0%, var(--color-cerulean-blue) 100%);
-  padding: var(--spacing-lg);
+  gap: 22px;
+  padding: var(--spacing-xl) clamp(20px, 3vw, 46px);
+  background: linear-gradient(158deg, var(--jaun-navy) 0%, #102C5A 45%, var(--jaun-support-blue) 100%);
+  overflow: hidden;
 }
 
 .login-card {
-  background: var(--color-white);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
-  max-width: 440px;
+  position: relative;
+  z-index: 1;
   width: 100%;
-  padding: var(--spacing-2xl);
+  max-width: 400px;
+  background: var(--jaun-white);
+  border-radius: var(--radius-xl);
+  padding: clamp(30px, 4vw, 44px) clamp(24px, 3vw, 38px);
   text-align: center;
+  box-shadow: 0 24px 60px rgba(6, 16, 38, 0.34);
 }
 
 .login-logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: var(--spacing-lg);
+  width: 74px;
+  height: 74px;
+  margin-bottom: 18px;
 }
 
 .login-title {
   font-family: var(--font-heading);
-  font-size: 1.75rem;
-  color: var(--color-navy-blue);
-  margin-bottom: var(--spacing-sm);
+  font-size: 1.42rem;
+  font-weight: 700;
+  color: var(--jaun-navy);
+  margin: 0 0 6px;
 }
 
 .login-subtitle {
   color: var(--color-medium-grey);
-  margin-bottom: var(--spacing-xl);
+  font-size: 0.93rem;
+  margin: 0 0 26px;
+}
+
+.login-google-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px;
 }
 
 .login-divider {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin: var(--spacing-xl) 0;
+  position: relative;
+  text-align: center;
+  margin: 24px 0 18px;
 }
 
 .login-divider::before,
 .login-divider::after {
   content: '';
-  flex: 1;
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 26px);
   height: 1px;
-  background: #E5E7EB;
+  background: #DDE1E8;
 }
 
+.login-divider::before { left: 0; }
+.login-divider::after { right: 0; }
+
 .login-divider span {
+  background: var(--jaun-white);
+  padding: 0 12px;
   color: var(--color-medium-grey);
+  font-size: 0.85rem;
+}
+
+.login-note {
   font-size: 0.9rem;
+  color: var(--jaun-navy);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.login-note .icon { color: var(--jaun-orange); }
+
+.login-note small {
+  display: inline-block;
+  margin-top: 5px;
+  font-size: 0.79rem;
+  color: var(--color-medium-grey);
+}
+
+.login-copyright {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-size: 0.78rem;
+  color: rgba(251, 251, 251, 0.65);
+}
+
+/* ===== รูปประกอบฝั่งซ้าย (ทางเลือก) =====
+   แสดงก็ต่อเมื่อ CONFIG.LOGIN_HERO_IMAGE มีค่า ถ้าเว้นว่างหน้าตาจะเหมือนไม่มีอะไรเพิ่ม */
+.login-hero-photo {
+  position: absolute;
+  right: -6%;
+  bottom: 0;
+  width: 50%;
+  max-width: 660px;
+  margin: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.login-hero-photo img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.login-hero.has-photo .login-hero-inner {
+  max-width: 42%;
+  min-width: 290px;
+}
+
+/* ---------- จอเล็ก: เรียงลงมาเป็นแถวเดียว ---------- */
+@media (max-width: 900px) {
+  .login-page { grid-template-columns: 1fr; }
+
+  .login-hero {
+    /* เว้นด้านบนมากขึ้น ให้ลายมุมมีที่วางโดยไม่ทับโลโก้ */
+    padding: 64px 24px 34px;
+    min-height: auto;
+  }
+
+  /* จอแคบมีที่ด้านบนน้อย ต้องทำให้ลายแบนลงมาก ไม่งั้นแถบจะพาดทับโลโก้ */
+  .login-corner {
+    width: 128px;
+    height: 40px;
+  }
+
+  .login-hero::after { display: none; }
+
+  .login-headline h1 { font-size: clamp(2rem, 9vw, 2.9rem); }
+
+  /* คุณค่าสามข้อบนจอแคบ วางเรียงแนวตั้งอ่านง่ายกว่าอัดเป็นแถว */
+  .login-values {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .login-values li {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .login-value-icon { margin-bottom: 0; }
+  .login-value-en::before { content: '· '; }
+
+  .login-quote { margin-top: 26px; }
+
+  .login-panel {
+    /* จอแคบ: ดันการ์ดขึ้นมาก่อน ไม่ให้ต้องเลื่อนผ่านเนื้อหาแบรนด์ก่อนเข้าสู่ระบบ */
+    order: -1;
+    padding: 34px 20px 26px;
+  }
+
+  /* ไม่มีที่พอวางรูปข้างข้อความ ซ่อนไปเลยดีกว่าให้ทับกัน */
+  .login-hero-photo { display: none; }
+  .login-hero.has-photo .login-hero-inner { max-width: 560px; }
 }
 
 /* ===================== ANIMATIONS ===================== */
@@ -1012,7 +1430,9 @@ a:hover {
 }
 
 .text-warning {
-  color: var(--color-warning);
+  /* เข้มกว่า --color-warning เพราะข้อความนี้ไปปรากฏบนพื้นเทาอ่อนด้วย
+     ไม่ใช่แค่พื้นขาว (4.76:1 บนเทาอ่อน / 5.61:1 บนขาว) */
+  color: #8E5A05;
 }
 
 .mt-sm {
@@ -1129,4 +1549,88 @@ a:hover {
   .header {
     padding-top: calc(var(--spacing-md) + env(safe-area-inset-top));
   }
+}
+
+/* ปุ่มออกจากระบบบนแถบน้ำเงิน
+   ใช้แบบโปร่งมีเส้นขอบ เพราะปุ่มแดงทึบบนพื้นน้ำเงินจะแย่งสายตาจากโลโก้
+   พอเอาเมาส์ชี้จึงเปลี่ยนเป็นสีส้มของแบรนด์ */
+.header .btn-danger {
+  /* พื้นน้ำเงินจางๆ คั่นปุ่มออกจากลายทแยงด้านหลัง ไม่ให้ตัวหนังสือจมลาย */
+  background: rgba(11, 30, 65, 0.55);
+  backdrop-filter: blur(2px);
+  color: var(--jaun-white);
+  border: 1.5px solid rgba(251, 251, 251, 0.5);
+  position: relative;
+  z-index: 2;
+}
+
+.header .btn-danger:hover:not(:disabled) {
+  background: var(--jaun-orange);
+  border-color: var(--jaun-orange);
+  color: var(--jaun-dark-text);
+  transform: translateY(-1px);
+}
+
+.header-avatar {
+  border: 2px solid rgba(251, 251, 251, 0.35);
+}
+
+/* จอแคบ: ซ่อนลายทแยงกันบังข้อความ และจัดแถวใหม่ให้ชิดซ้าย */
+@media (max-width: 640px) {
+  .header::after {
+    display: none;
+  }
+
+  /* จอแคบมีกฎเดิมตั้ง flex-direction: column ไว้ แกนหลักจึงเป็นแนวตั้ง
+     ตัวที่คุมตำแหน่งแนวนอนคือ align-items (ค่าเดิมคือ center)
+     ไม่ใช่ justify-content จึงต้องแก้ที่ align-items */
+  .header-inner {
+    align-items: stretch;
+  }
+
+  /* แถวผู้ใช้กินเต็มความกว้าง ชื่ออยู่ซ้าย ปุ่มออกจากระบบอยู่ขวา */
+  .header-user {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .header-user-info {
+    text-align: left;
+  }
+
+  .header-user-role {
+    justify-content: flex-start;
+  }
+}
+
+/* ไอคอนหน้าหัวข้อหมวดบริการ */
+.category-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--jaun-orange);
+}
+
+.category-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+/* ===================== ไอคอนเส้น (แทนอิโมจิ) =====================
+   ขนาดผูกกับ font-size ของข้อความรอบๆ (1em) จึงวางแทนอิโมจิได้พอดี
+   ไม่ต้องกำหนดขนาดรายจุด และสีตามข้อความผ่าน currentColor */
+.icon {
+  width: 1.05em;
+  height: 1.05em;
+  display: inline-block;
+  vertical-align: -0.17em;
+  flex-shrink: 0;
+}
+
+.icon-lg { width: 1.4em; height: 1.4em; vertical-align: -0.28em; }
+.icon-xl { width: 4rem; height: 4rem; vertical-align: middle; }
+
+/* ปุ่มและหัวข้อที่มีไอคอนนำหน้า ให้เว้นระยะและจัดกึ่งกลางแนวตั้ง */
+.btn .icon,
+.card-title .icon {
+  margin-right: 0.4em;
 }

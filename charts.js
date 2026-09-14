@@ -21,11 +21,11 @@ const Charts = {
    * สีที่ใช้ในกราฟ
    */
   colors: {
-    primary: '#1B2A5C',
-    secondary: '#45ABC5',
-    accent: '#48DBFF',
-    orange: '#E56905',
-    vibrantOrange: '#FF7F00',
+    primary: '#0B1E41',        // JAUN Navy
+    secondary: '#21417E',      // Support Blue
+    accent: '#3A63B8',         // ไล่จาก Support Blue
+    orange: '#F86E0B',         // JAUN Orange
+    vibrantOrange: '#C35608',  // ไล่จาก JAUN Orange
     success: '#10B981',
     warning: '#F59E0B',
     danger: '#EF4444',
@@ -86,7 +86,7 @@ const Charts = {
           legend: { display: false },
           title: {
             display: true,
-            text: '📈 คำขอ 7 วันล่าสุด',
+            text: 'คำขอ 7 วันล่าสุด',
             font: { size: 16, weight: 'bold' }
           }
         },
@@ -147,7 +147,7 @@ const Charts = {
           },
           title: {
             display: true,
-            text: '🎨 คำขอตามประเภทบริการ',
+            text: 'คำขอตามประเภทบริการ',
             font: { size: 16, weight: 'bold' }
           }
         }
@@ -201,7 +201,7 @@ const Charts = {
           legend: { display: false },
           title: {
             display: true,
-            text: '🏢 คำขอตามแผนก',
+            text: 'คำขอตามแผนก',
             font: { size: 16, weight: 'bold' }
           }
         },
@@ -259,7 +259,7 @@ const Charts = {
           legend: { display: false },
           title: {
             display: true,
-            text: '📊 คำขอตามสถานะ',
+            text: 'คำขอตามสถานะ',
             font: { size: 16, weight: 'bold' }
           }
         },

@@ -5,13 +5,39 @@
 
 const Components = {
   /**
+   * เครื่องหมายโลโก้ JAUN (ใช้ภายใน <svg viewBox="0 0 80 80">)
+   *
+   * รวมไว้ที่เดียวเพราะโลโก้โผล่ 3 ที่: แถบด้านบน, หน้า login ฝั่งซ้าย, การ์ดเข้าสู่ระบบ
+   * เดิมวาดแยกกันด้วย <text> ตัว J จากฟอนต์ ซึ่งไม่ตรงกับโลโก้จริง
+   *
+   * หมายเหตุ: นี่เป็นการวาดเลียนแบบจากภาพ mockup ยังไม่ใช่ไฟล์โลโก้ต้นฉบับ
+   */
+  /**
+   * เครื่องหมายโลโก้ JAUN (ใช้ภายใน <svg viewBox="0 0 80 80">)
+   *
+   * รวมไว้ที่เดียวเพราะโลโก้โผล่ 3 ที่: แถบด้านบน, หน้า login ฝั่งซ้าย, การ์ดเข้าสู่ระบบ
+   *
+   * onDark = true ใช้ตอนวางบนพื้นน้ำเงิน (เช่นแถบด้านบน) สลับเป็นกล่องขาวตัว J น้ำเงิน
+   * เพราะกล่องน้ำเงินบนพื้นน้ำเงินจะจมหายไป ส่วนแถบส้มคงไว้เหมือนเดิมทั้งสองแบบ
+   */
+  jaunMark(onDark) {
+    const tile = onDark ? '#FBFBFB' : '#0B1E41';
+    const letter = onDark ? '#0B1E41' : '#FBFBFB';
+    return `
+      <rect width="80" height="80" rx="18" fill="${tile}"/>
+      <rect x="19.5" y="15" width="24" height="13" rx="2.5" fill="#F86E0B"/>
+      <path d="M46 15h15.5v29.8c0 10.3-8.4 18.7-18.7 18.7-9.6 0-17.6-7.3-18.6-16.7l14.9-1.6c.4 2.1 2.2 3.7 4.4 3.7 2.5 0 4.5-2 4.5-4.5V15z" fill="${letter}"/>
+    `;
+  },
+
+  /**
    * สร้าง Header
    */
   header(user) {
     const roleLabel = {
-      superadmin: '⭐ Super Admin',
-      admin: '🛡️ Admin',
-      user: '👤 User'
+      superadmin: Icons.get('star') + ' Super Admin',
+      admin: Icons.get('shield') + ' Admin',
+      user: Icons.get('user') + ' User'
     };
 
     return `
@@ -19,13 +45,12 @@ const Components = {
         <div class="container">
           <div class="header-inner">
             <div class="header-brand">
-              <svg class="header-logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="40" height="40" rx="8" fill="#1B2A5C"/>
-                <text x="20" y="26" text-anchor="middle" fill="white" font-family="Montserrat" font-weight="700" font-size="16">J</text>
+              <svg class="header-logo" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                ${Components.jaunMark(true)}
               </svg>
               <div>
                 <div class="header-title">${CONFIG.COMPANY_NAME}</div>
-                <div style="font-size: 0.75rem; color: var(--color-medium-grey);">Creative Request System</div>
+                <div class="header-subtitle">Creative Request System</div>
               </div>
             </div>
             <div class="header-user">
@@ -70,7 +95,7 @@ const Components = {
   serviceCard(service, isActive = false) {
     return `
       <div class="service-card ${isActive ? 'active' : ''}" data-service="${service.id}" onclick="Pages.selectService('${service.id}')">
-        <div class="service-icon">${service.icon}</div>
+        <div class="service-icon" style="color: ${service.color}">${service.iconSvg || service.icon}</div>
         <div class="service-name">${Utils.escapeHtml(service.name)}<br><small>${Utils.escapeHtml(service.nameTh)}</small></div>
       </div>
     `;
@@ -89,7 +114,7 @@ const Components = {
     // ปุ่มดูรายละเอียด - แสดงเสมอ
     let viewDetailBtn = `
         <button class="btn btn-secondary btn-sm" onclick="Components.showRequestDetail('${request.id}')">
-          👁️ ดูรายละเอียด
+          ${Icons.get('eye')} ดูรายละเอียด
         </button>
       `;
 
@@ -97,13 +122,13 @@ const Components = {
     if (request.status === 'revision') {
       alertBox = `
         <div class="alert alert-warning">
-          <strong>💬 ข้อความจากแอดมิน:</strong><br>
+          <strong>${Icons.get('message')} ข้อความจากแอดมิน:</strong><br>
           ${Utils.escapeHtml(request.adminComment || 'กรุณาตรวจสอบและแก้ไขข้อมูล')}
         </div>
       `;
       actionButtons = `
         <button class="btn btn-warning" onclick="App.navigate('editRequest', '${request.id}')">
-          ✏️ แก้ไขคำขอนี้
+          ${Icons.get('pencil')} แก้ไขคำขอนี้
         </button>
       `;
     }
@@ -112,7 +137,7 @@ const Components = {
     if (request.status === 'completed' && request.completedFileLink) {
       actionButtons = `
         <a href="${Utils.escapeHtml(request.completedFileLink)}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
-          📥 ดาวน์โหลดไฟล์งาน
+          ${Icons.get('download')} ดาวน์โหลดไฟล์งาน
         </a>
       `;
     }
@@ -121,7 +146,7 @@ const Components = {
     if (request.status === 'rejected' && request.rejectionReason) {
       alertBox = `
         <div class="alert alert-danger">
-          <strong>❌ เหตุผลที่ปฏิเสธ:</strong><br>
+          <strong>${Icons.get('x')} เหตุผลที่ปฏิเสธ:</strong><br>
           ${Utils.escapeHtml(request.rejectionReason)}
         </div>
       `;
@@ -134,7 +159,7 @@ const Components = {
       <div class="request-card">
         <div class="request-header">
           <div class="request-title-area">
-            <span class="request-icon">${service?.icon || '📄'}</span>
+            <span class="request-icon" style="color: ${service?.color || 'var(--jaun-navy)'}">${service?.iconSvg || service?.icon || Icons.get('file')}</span>
             <div>
               <h3 class="request-title">${Utils.escapeHtml(request.projectName)}</h3>
               <div class="request-subtitle">${service?.name || request.serviceType} - ${service?.nameTh || ''}</div>
@@ -148,7 +173,7 @@ const Components = {
           ${request.deadline ? `<p class="request-meta"><strong>วันที่ต้องการ:</strong> ${Utils.formatDate(request.deadline)}</p>` : ''}
           ${request.appointmentDate ? `<p class="request-meta"><strong>วันที่ถ่าย:</strong> ${Utils.formatDateTime(request.appointmentDate)}</p>` : ''}
           ${request.location ? `<p class="request-meta"><strong>สาขา/สถานที่:</strong> ${Utils.escapeHtml(request.location)}</p>` : ''}
-          ${request.revisionCount > 0 ? `<p class="request-meta text-warning"><strong>🔄 แก้ไขแล้ว:</strong> ${request.revisionCount} ครั้ง</p>` : ''}
+          ${request.revisionCount > 0 ? `<p class="request-meta text-warning"><strong>${Icons.get('refresh')} แก้ไขแล้ว:</strong> ${request.revisionCount} ครั้ง</p>` : ''}
         </div>
         
         ${alertBox}
@@ -170,27 +195,27 @@ const Components = {
     // ปุ่มดูรายละเอียด - แสดงเสมอ
     let viewDetailBtn = `
         <button class="btn btn-secondary btn-sm" onclick="Components.showRequestDetail('${request.id}')">
-          👁️ ดูรายละเอียด
+          ${Icons.get('eye')} ดูรายละเอียด
         </button>
       `;
 
     // ปุ่มตามสถานะ
     if (request.status === 'pending') {
       actionButtons = `
-        <button class="btn btn-success" onclick="Pages.approveRequest('${request.id}')">✅ อนุมัติ</button>
-        <button class="btn btn-warning" onclick="Pages.sendRevision('${request.id}')">🔄 ส่งกลับแก้ไข</button>
-        <button class="btn btn-danger" onclick="Pages.rejectRequest('${request.id}')">❌ ปฏิเสธ</button>
+        <button class="btn btn-success" onclick="Pages.approveRequest('${request.id}')">${Icons.get('check')} อนุมัติ</button>
+        <button class="btn btn-warning" onclick="Pages.sendRevision('${request.id}')">${Icons.get('refresh')} ส่งกลับแก้ไข</button>
+        <button class="btn btn-danger" onclick="Pages.rejectRequest('${request.id}')">${Icons.get('x')} ปฏิเสธ</button>
       `;
     } else if (request.status === 'progress') {
       actionButtons = `
-        <button class="btn btn-success" onclick="Pages.completeRequest('${request.id}')">✅ แจ้งงานเสร็จ</button>
+        <button class="btn btn-success" onclick="Pages.completeRequest('${request.id}')">${Icons.get('check')} แจ้งงานเสร็จ</button>
       `;
     }
 
     // Super Admin สามารถลบได้
     if (Auth.isSuperAdmin(Auth.getUser()?.email)) {
       actionButtons += `
-        <button class="btn btn-danger btn-sm" onclick="Pages.deleteRequest('${request.id}')">🗑️ ลบ</button>
+        <button class="btn btn-danger btn-sm" onclick="Pages.deleteRequest('${request.id}')">${Icons.get('trash')} ลบ</button>
       `;
     }
 
@@ -201,14 +226,14 @@ const Components = {
       <div class="request-card">
         <div class="request-header">
           <div class="request-title-area">
-            <span class="request-icon">${service?.icon || '📄'}</span>
+            <span class="request-icon" style="color: ${service?.color || 'var(--jaun-navy)'}">${service?.iconSvg || service?.icon || Icons.get('file')}</span>
             <div>
               <h3 class="request-title">${Utils.escapeHtml(request.projectName)}</h3>
               <div class="request-subtitle">${service?.name || request.serviceType}</div>
               <div class="request-meta mt-sm">
-                👤 ${Utils.escapeHtml(user?.name || request.submittedBy)} | 
-                🏢 ${Utils.escapeHtml(user?.department || 'N/A')} | 
-                📅 ${Utils.formatDate(request.submittedAt)}
+                ${Icons.get('user')} ${Utils.escapeHtml(user?.name || request.submittedBy)} | 
+                ${Icons.get('building')} ${Utils.escapeHtml(user?.department || 'N/A')} | 
+                ${Icons.get('calendar')} ${Utils.formatDate(request.submittedAt)}
               </div>
             </div>
           </div>
@@ -219,7 +244,7 @@ const Components = {
           ${request.details ? `<p><strong>รายละเอียด:</strong> ${Utils.escapeHtml(request.details.substring(0, 100))}${request.details.length > 100 ? '...' : ''}</p>` : ''}
           ${request.deadline ? `<p class="request-meta"><strong>วันที่ต้องการ:</strong> ${Utils.formatDate(request.deadline)}</p>` : ''}
           ${request.appointmentDate ? `<p class="request-meta"><strong>วันที่ถ่าย:</strong> ${Utils.formatDateTime(request.appointmentDate)}</p>` : ''}
-          ${request.revisionCount > 0 ? `<p class="request-meta text-warning"><strong>🔄 แก้ไขแล้ว:</strong> ${request.revisionCount} ครั้ง</p>` : ''}
+          ${request.revisionCount > 0 ? `<p class="request-meta text-warning"><strong>${Icons.get('refresh')} แก้ไขแล้ว:</strong> ${request.revisionCount} ครั้ง</p>` : ''}
         </div>
         
         <div class="request-actions">${allButtons}</div>
@@ -311,9 +336,9 @@ const Components = {
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">🖼️ รูปภาพอ้างอิง / ตัวอย่าง</label>
+          <label class="form-label">${Icons.get('image')} รูปภาพอ้างอิง / ตัวอย่าง</label>
           <textarea class="form-textarea" name="referenceLink" rows="4" placeholder="วางลิงก์รูปภาพจาก Google Drive หรือ Imgur&#10;สามารถวางได้หลายลิงก์ แต่ละรูปคั่นด้วย Enter&#10;&#10;ตัวอย่าง:&#10;https://drive.google.com/file/d/xxx&#10;https://imgur.com/abc123">${Utils.escapeHtml(existingData.referenceLink || '')}</textarea>
-          <small style="color: var(--color-medium-grey);">💡 วางลิงก์รูปภาพได้หลายรูป แต่ละรูปคั่นด้วยการขึ้นบรรทัดใหม่</small>
+          <small style="color: var(--color-medium-grey);">${Icons.get('bulb')} วางลิงก์รูปภาพได้หลายรูป แต่ละรูปคั่นด้วยการขึ้นบรรทัดใหม่</small>
         </div>
       `;
     }
@@ -348,24 +373,24 @@ const Components = {
         <input type="text" class="form-input" name="projectName" value="${Utils.escapeHtml(existingData.projectName || '')}" required placeholder="ระบุหมายเลขอินวอยด์, คำสั่งซื้อ หรือรายละเอียดสินค้าที่จะถ่าย">
       </div>
       <div class="form-group">
-        <label class="form-label">📅 วันและเวลาที่ต้องการถ่าย *</label>
+        <label class="form-label">${Icons.get('calendar')} วันและเวลาที่ต้องการถ่าย *</label>
         <input type="datetime-local" class="form-input" name="appointmentDate" value="${existingData.appointmentDate || ''}" required>
       </div>
       <div class="form-group">
-        <label class="form-label">📍 สถานที่ถ่าย *</label>
+        <label class="form-label">${Icons.get('pin')} สถานที่ถ่าย *</label>
         <select class="form-select" name="location" required>
           <option value="">เลือกสถานที่</option>
           ${Utils.createSelectOptions(CONFIG.FORM_OPTIONS.photoLocations, existingData.location)}
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">📱 ประเภทสินค้า</label>
+        <label class="form-label">${Icons.get('phone')} ประเภทสินค้า</label>
         <select class="form-select" name="productType">
           ${Utils.createSelectOptions(CONFIG.FORM_OPTIONS.productTypes, existingData.productType)}
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">📝 รายละเอียดสินค้าที่จะถ่าย</label>
+        <label class="form-label">${Icons.get('pencil')} รายละเอียดสินค้าที่จะถ่าย</label>
         <textarea class="form-textarea" name="productDetails" placeholder="รายละเอียดสินค้าที่จะถ่าย เช่น สี รุ่น สภาพ ฯลฯ">${Utils.escapeHtml(existingData.productDetails || '')}</textarea>
       </div>
     `;
@@ -407,7 +432,7 @@ const Components = {
     if (request.serviceType === 'graphic') {
       serviceDetails = `
             <div class="detail-section">
-              <h4>📐 ข้อมูลงานกราฟิก</h4>
+              <h4>${Icons.get('ruler')} ข้อมูลงานกราฟิก</h4>
               ${request.purpose ? `<p><strong>วัตถุประสงค์:</strong> ${Utils.escapeHtml(request.purpose)}</p>` : ''}
               ${request.imageSize ? `<p><strong>ขนาด:</strong> ${Utils.escapeHtml(request.imageSize)}</p>` : ''}
               ${request.referenceLink ? `
@@ -419,7 +444,7 @@ const Components = {
     } else if (request.serviceType === 'video') {
       serviceDetails = `
             <div class="detail-section">
-              <h4>🎬 ข้อมูลงานวิดีโอ</h4>
+              <h4>${Icons.get('video')} ข้อมูลงานวิดีโอ</h4>
               ${request.videoFormat ? `<p><strong>รูปแบบ:</strong> ${Utils.escapeHtml(request.videoFormat)}</p>` : ''}
               ${request.videoDuration ? `<p><strong>ความยาว:</strong> ${Utils.escapeHtml(request.videoDuration)}</p>` : ''}
               ${request.tiktokRef ? `<p><strong>TikTok อ้างอิง:</strong> <a href="${Utils.escapeHtml(request.tiktokRef)}" target="_blank">ดูที่นี่</a></p>` : ''}
@@ -428,7 +453,7 @@ const Components = {
     } else if (request.serviceType === 'photo') {
       serviceDetails = `
             <div class="detail-section">
-              <h4>📸 ข้อมูลงานถ่ายภาพ</h4>
+              <h4>${Icons.get('camera')} ข้อมูลงานถ่ายภาพ</h4>
               ${request.appointmentDate ? `<p><strong>วันเวลาถ่าย:</strong> ${Utils.formatDateTime(request.appointmentDate)}</p>` : ''}
               ${request.location ? `<p><strong>สถานที่:</strong> ${Utils.escapeHtml(request.location)}</p>` : ''}
               ${request.productType ? `<p><strong>ประเภทสินค้า:</strong> ${Utils.escapeHtml(request.productType)}</p>` : ''}
@@ -438,7 +463,7 @@ const Components = {
     } else if (request.serviceType === 'tech' || request.serviceType === 'sales') {
       serviceDetails = `
             <div class="detail-section">
-              <h4>🎥 ข้อมูลงานตัดต่อ</h4>
+              <h4>${Icons.get('film')} ข้อมูลงานตัดต่อ</h4>
               ${request.location ? `<p><strong>สาขา:</strong> ${Utils.escapeHtml(request.location)}</p>` : ''}
               ${request.driveLink ? `<p><strong>ลิงก์ไฟล์:</strong> <a href="${Utils.escapeHtml(request.driveLink)}" target="_blank">ดูที่นี่</a></p>` : ''}
             </div>
@@ -450,13 +475,13 @@ const Components = {
         <div class="modal-overlay" id="request-detail-modal" onclick="Components.closeRequestDetail(event)">
           <div class="modal-content modal-lg" onclick="event.stopPropagation()">
             <div class="modal-header">
-              <h2>${service?.icon || '📄'} ${Utils.escapeHtml(request.projectName)}</h2>
+              <h2 style="display:flex;align-items:center;gap:10px"><span class="request-icon" style="color: ${service?.color || 'var(--jaun-navy)'}">${service?.iconSvg || service?.icon || Icons.get('file')}</span>${Utils.escapeHtml(request.projectName)}</h2>
               <button class="modal-close" onclick="Components.closeRequestDetail()">&times;</button>
             </div>
             <div class="modal-body">
               <!-- ข้อมูลพื้นฐาน -->
               <div class="detail-section">
-                <h4>📋 ข้อมูลพื้นฐาน</h4>
+                <h4>${Icons.get('clipboard')} ข้อมูลพื้นฐาน</h4>
                 <div class="detail-grid">
                   <div><strong>ประเภทบริการ:</strong> ${service?.name || request.serviceType} (${service?.nameTh || ''})</div>
                   <div><strong>สถานะ:</strong> <span class="badge badge-${request.status}">${statusInfo?.label || request.status}</span></div>
@@ -471,7 +496,7 @@ const Components = {
               ${request.details ? `
               <!-- รายละเอียดงาน -->
               <div class="detail-section">
-                <h4>📝 รายละเอียดงาน</h4>
+                <h4>${Icons.get('pencil')} รายละเอียดงาน</h4>
                 <p style="white-space: pre-wrap;">${Utils.escapeHtml(request.details)}</p>
               </div>
               ` : ''}
@@ -481,7 +506,7 @@ const Components = {
               ${request.adminComment ? `
               <!-- ข้อความจากแอดมิน -->
               <div class="detail-section" style="background: #FEF3C7;">
-                <h4>💬 ข้อความจากแอดมิน</h4>
+                <h4>${Icons.get('message')} ข้อความจากแอดมิน</h4>
                 <p>${Utils.escapeHtml(request.adminComment)}</p>
               </div>
               ` : ''}
@@ -489,7 +514,7 @@ const Components = {
               ${request.rejectionReason ? `
               <!-- เหตุผลที่ปฏิเสธ -->
               <div class="detail-section" style="background: #FEE2E2;">
-                <h4>❌ เหตุผลที่ปฏิเสธ</h4>
+                <h4>${Icons.get('x')} เหตุผลที่ปฏิเสธ</h4>
                 <p>${Utils.escapeHtml(request.rejectionReason)}</p>
               </div>
               ` : ''}
@@ -497,8 +522,8 @@ const Components = {
               ${request.completedFileLink ? `
               <!-- ไฟล์งานที่เสร็จ -->
               <div class="detail-section" style="background: #D1FAE5;">
-                <h4>✅ งานเสร็จสมบูรณ์</h4>
-                <a href="${Utils.escapeHtml(request.completedFileLink)}" target="_blank" class="btn btn-success">📥 ดาวน์โหลดไฟล์งาน</a>
+                <h4>${Icons.get('check')} งานเสร็จสมบูรณ์</h4>
+                <a href="${Utils.escapeHtml(request.completedFileLink)}" target="_blank" class="btn btn-success">${Icons.get('download')} ดาวน์โหลดไฟล์งาน</a>
               </div>
               ` : ''}
             </div>
@@ -531,7 +556,7 @@ const Components = {
     return links.map(link => {
       const trimmedLink = link.trim();
       if (trimmedLink.startsWith('http')) {
-        return `<a href="${Utils.escapeHtml(trimmedLink)}" target="_blank" class="reference-link">🔗 ${Utils.escapeHtml(trimmedLink.substring(0, 50))}...</a>`;
+        return `<a href="${Utils.escapeHtml(trimmedLink)}" target="_blank" class="reference-link">${Icons.get('link')} ${Utils.escapeHtml(trimmedLink.substring(0, 50))}...</a>`;
       }
       return `<span>${Utils.escapeHtml(trimmedLink)}</span>`;
     }).join('');

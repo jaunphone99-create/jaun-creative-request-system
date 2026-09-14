@@ -124,34 +124,94 @@ const Pages = {
   renderLogin() {
     return `
       <div class="login-page">
-        <div class="login-card fade-in">
-          <svg class="login-logo" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="80" height="80" rx="16" fill="#1B2A5C"/>
-            <text x="40" y="52" text-anchor="middle" fill="white" font-family="Montserrat" font-weight="800" font-size="32">J</text>
+
+        <!-- ฝั่งซ้าย: แนะนำแบรนด์ -->
+        <section class="login-hero${CONFIG.LOGIN_HERO_IMAGE ? ' has-photo' : ''}">
+          <!-- ลายมุมบนซ้าย วาดด้วย SVG เพื่อคุมความยาวแถบได้จริง
+               (เดิมใช้สี่เหลี่ยมหมุนแล้วโดนตัด เลยดูเป็นตอสั้นๆ) -->
+          <svg class="login-corner" viewBox="0 0 260 260" aria-hidden="true" preserveAspectRatio="none">
+            <polygon points="0,0 168,0 0,168" fill="#0B1E41"/>
+            <polygon points="186,0 232,0 0,232 0,186" fill="#F86E0B"/>
+            <polygon points="246,0 262,0 0,262 0,246" fill="#21417E"/>
           </svg>
-          <h1 class="login-title">${CONFIG.COMPANY_NAME}</h1>
-          <p class="login-subtitle">${CONFIG.WELCOME_MESSAGE}</p>
-          
-          <!-- Google Sign-In Container -->
-          <div id="google-signin-button" style="display: flex; justify-content: center; min-height: 50px; align-items: center;">
-            <div class="loading-spinner" style="border-color: rgba(27, 42, 92, 0.2); border-top-color: #1B2A5C;"></div>
-            <span style="margin-left: 10px; color: var(--color-medium-grey);">กำลังโหลด...</span>
+          <div class="login-hero-inner">
+
+            <div class="login-brand">
+              <svg class="login-brand-logo" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                ${Components.jaunMark()}
+              </svg>
+              <div>
+                <div class="login-brand-name">${CONFIG.COMPANY_NAME}</div>
+                <div class="login-brand-tagline">SYSTEM FOR A BETTER TOMORROW</div>
+              </div>
+            </div>
+
+            <div class="login-headline">
+              <span class="login-rule"></span>
+              <h1>IDEAS<br>MAKE IT<br><em>HAPPEN</em></h1>
+              <p class="login-headline-th">ไอเดียที่ใช่ สร้างพรุ่งนี้ที่ดีกว่า</p>
+            </div>
+
+            <ul class="login-values">
+              <li>
+                <span class="login-value-icon">${Icons.get('bulb')}</span>
+                <span class="login-value-th">คิดสร้างสรรค์</span>
+                <span class="login-value-en">Creative</span>
+              </li>
+              <li>
+                <span class="login-value-icon">${Icons.get('users')}</span>
+                <span class="login-value-th">ทำงานเป็นทีม</span>
+                <span class="login-value-en">Together</span>
+              </li>
+              <li>
+                <span class="login-value-icon">${Icons.get('chart')}</span>
+                <span class="login-value-th">เติบโตไปด้วยกัน</span>
+                <span class="login-value-en">Growth</span>
+              </li>
+            </ul>
+
+            <blockquote class="login-quote">ระบบที่ดี ช่วยให้คนทำงานได้ดีขึ้น</blockquote>
           </div>
-          
-          <!-- Fallback Button (hidden by default) -->
-          <button id="google-fallback-btn" class="btn btn-google btn-lg btn-block hidden" onclick="Auth.triggerGooglePrompt()">
-            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-            ลงชื่อเข้าใช้ด้วย Google
-          </button>
-          
-          <div class="login-divider">
-            <span>หรือ</span>
+
+          ${CONFIG.LOGIN_HERO_IMAGE ? `
+            <figure class="login-hero-photo">
+              <img src="${CONFIG.LOGIN_HERO_IMAGE}" alt="${Utils.escapeHtml(CONFIG.LOGIN_HERO_IMAGE_ALT || '')}" loading="lazy">
+            </figure>` : ''}
+        </section>
+
+        <!-- ฝั่งขวา: กล่องเข้าสู่ระบบ -->
+        <section class="login-panel">
+          <div class="login-card fade-in">
+            <svg class="login-logo" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              ${Components.jaunMark()}
+            </svg>
+
+            <h2 class="login-title">${CONFIG.COMPANY_NAME}</h2>
+            <p class="login-subtitle">${CONFIG.WELCOME_MESSAGE}</p>
+
+            <!-- ปุ่มของ Google จะถูกวาดลงกล่องนี้ -->
+            <div id="google-signin-button" class="login-google-slot">
+              <div class="loading-spinner" style="border-color: rgba(11, 30, 65, 0.2); border-top-color: #0B1E41;"></div>
+              <span style="margin-left: 10px; color: var(--color-medium-grey);">กำลังโหลด...</span>
+            </div>
+
+            <!-- ปุ่มสำรอง เผื่อสคริปต์ Google โหลดไม่ขึ้น -->
+            <button id="google-fallback-btn" class="btn btn-google btn-lg btn-block hidden" onclick="Auth.triggerGooglePrompt()">
+              <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              ลงชื่อเข้าใช้ด้วยบัญชี Google
+            </button>
+
+            <div class="login-divider"><span>หรือ</span></div>
+
+            <p class="login-note">
+              ${Icons.get('shield')} ใช้บัญชี Google ของบริษัทเท่านั้น<br>
+              <small>ไม่ต้องจำรหัสผ่านเพิ่ม และบริษัทควบคุมสิทธิ์เข้าถึงได้จากที่เดียว</small>
+            </p>
           </div>
-          
-          <p style="color: var(--color-medium-grey); font-size: 0.9rem;">
-            ใช้บัญชี Google ของบริษัทเพื่อเข้าสู่ระบบ
-          </p>
-        </div>
+
+          <p class="login-copyright">© ${new Date().getFullYear() + 543} ${CONFIG.COMPANY_NAME} · สงวนลิขสิทธิ์</p>
+        </section>
+
       </div>
     `;
   },
@@ -179,7 +239,7 @@ const Pages = {
         console.warn('Google Sign-In script failed to load');
         const container = document.getElementById('google-signin-button');
         const fallback = document.getElementById('google-fallback-btn');
-        if (container) container.innerHTML = '<span style="color: var(--color-danger);">⚠️ กรุณารีเฟรชหน้าเว็บ</span>';
+        if (container) container.innerHTML = '<span style="color: var(--color-danger);">' + Icons.get('alert') + ' กรุณารีเฟรชหน้าเว็บ</span>';
         if (fallback) fallback.classList.remove('hidden');
       }
     };
@@ -208,7 +268,7 @@ const Pages = {
       departmentSelector = `
         <div class="card mb-lg">
           <div class="alert alert-info">
-            <strong>⚠️ กรุณาเลือกแผนกของคุณก่อนใช้งาน</strong>
+            <strong>${Icons.get('alert')} กรุณาเลือกแผนกของคุณก่อนใช้งาน</strong>
           </div>
           <div class="form-group">
             <label class="form-label">เลือกแผนก</label>
@@ -238,17 +298,17 @@ const Pages = {
           
           <!-- Create Request Button -->
           <button class="btn btn-primary btn-lg btn-block mb-xl" onclick="App.navigate('createRequest')" ${!user.department ? 'disabled' : ''}>
-            ➕ สร้างคำขอใหม่
+            ${Icons.get('plus')} สร้างคำขอใหม่
           </button>
           
           <!-- Requests List -->
           <div class="card">
             <div class="card-header">
-              <h2 class="card-title">📋 คำขอของฉัน</h2>
+              <h2 class="card-title">${Icons.get('clipboard')} คำขอของฉัน</h2>
             </div>
             <div class="card-body">
               ${userRequests.length === 0
-        ? Components.emptyState('📋', 'ยังไม่มีคำขอ คลิกปุ่มด้านบนเพื่อสร้างคำขอใหม่')
+        ? Components.emptyState(Icons.get('clipboard', 'icon-xl'), 'ยังไม่มีคำขอ คลิกปุ่มด้านบนเพื่อสร้างคำขอใหม่')
         : userRequests.map(r => Components.userRequestCard(r)).join('')
       }
             </div>
@@ -298,7 +358,7 @@ const Pages = {
       <main class="main-content">
         <div class="container" style="max-width: 900px;">
           <button class="btn btn-secondary mb-lg" onclick="App.navigate('userDashboard')">
-            ← กลับ
+            ${Icons.get('arrowLeft')} กลับ
           </button>
           
           <h1 class="mb-lg">สร้างคำขอใหม่</h1>
@@ -313,7 +373,7 @@ const Pages = {
       const category = CONFIG.SERVICE_CATEGORIES[catId];
       return `
                   <div class="service-category">
-                    <div class="service-category-title">${category?.name || catId} - ${category?.nameTh || ''}</div>
+                    <div class="service-category-title"><span class="category-icon">${category?.iconSvg || ''}</span>${category?.name || catId} - ${category?.nameTh || ''}</div>
                     <div class="service-grid">
                       ${services.map(s => Components.serviceCard(s)).join('')}
                     </div>
@@ -333,7 +393,7 @@ const Pages = {
                 <input type="hidden" name="serviceType" id="service-type-input">
                 <div id="form-fields"></div>
                 <button type="submit" class="btn btn-primary btn-lg btn-block mt-lg">
-                  ✅ ส่งคำขอ
+                  ${Icons.get('check')} ส่งคำขอ
                 </button>
               </form>
             </div>
@@ -441,7 +501,7 @@ const Pages = {
         <main class="main-content">
           <div class="container">
             <div class="alert alert-danger">ไม่พบคำขอนี้</div>
-            <button class="btn btn-secondary" onclick="App.navigate('userDashboard')">← กลับ</button>
+            <button class="btn btn-secondary" onclick="App.navigate('userDashboard')">${Icons.get('arrowLeft')} กลับ</button>
           </div>
         </main>
       `;
@@ -455,15 +515,15 @@ const Pages = {
       <main class="main-content">
         <div class="container" style="max-width: 900px;">
           <button class="btn btn-secondary mb-lg" onclick="App.navigate('userDashboard')">
-            ← กลับ
+            ${Icons.get('arrowLeft')} กลับ
           </button>
           
           <h1 class="mb-md">แก้ไขคำขอ: ${Utils.escapeHtml(request.projectName)}</h1>
-          <p class="text-grey mb-lg">${service?.icon} ${service?.name || request.serviceType}</p>
+          <p class="text-grey mb-lg" style="display:flex;align-items:center;gap:8px"><span class="request-icon" style="color: ${service?.color || 'var(--jaun-navy)'}">${service?.iconSvg || service?.icon || ''}</span>${service?.name || request.serviceType}</p>
           
           ${request.adminComment ? `
             <div class="alert alert-warning mb-lg">
-              <strong>💬 ข้อความจากแอดมิน:</strong><br>
+              <strong>${Icons.get('message')} ข้อความจากแอดมิน:</strong><br>
               ${Utils.escapeHtml(request.adminComment)}
             </div>
           ` : ''}
@@ -477,7 +537,7 @@ const Pages = {
                 <input type="hidden" name="id" value="${request.id}">
                 ${Components.getFormFields(request.serviceType, request)}
                 <button type="submit" class="btn btn-primary btn-lg btn-block mt-lg">
-                  ✅ บันทึกการแก้ไข
+                  ${Icons.get('check')} บันทึกการแก้ไข
                 </button>
               </form>
             </div>
@@ -605,16 +665,16 @@ const Pages = {
         <div class="container">
           ${showWarning ? `
             <div class="alert alert-danger">
-              <strong>⚠️ คำเตือน:</strong> ใช้พื้นที่ ${dataUsage}/999 รายการ - กรุณาลบข้อมูลเก่าเพื่อเคลียร์พื้นที่
+              <strong>${Icons.get('alert')} คำเตือน:</strong> ใช้พื้นที่ ${dataUsage}/999 รายการ - กรุณาลบข้อมูลเก่าเพื่อเคลียร์พื้นที่
             </div>
           ` : ''}
           
           ${upcomingDeadlines.length > 0 ? `
             <!-- Deadline Warning Section -->
-            <div class="card mb-lg" style="border: 2px solid #F97316; background: linear-gradient(135deg, #FFF7ED, #FFEDD5);">
-              <div class="card-header" style="background: linear-gradient(135deg, #F97316, #EA580C); color: white; border-radius: 8px 8px 0 0;">
+            <div class="card mb-lg" style="border: 2px solid #F86E0B; background: linear-gradient(135deg, #FFF4EA, #FFE6D2);">
+              <div class="card-header" style="background: linear-gradient(135deg, #F86E0B, #C35608); color: #FFFFFF; border-radius: 8px 8px 0 0;">
                 <h2 class="card-title" style="color: white; display: flex; align-items: center; gap: 8px;">
-                  ⚠️ งานใกล้ครบกำหนด (${upcomingDeadlines.length} รายการ)
+                  ${Icons.get('alert')} งานใกล้ครบกำหนด (${upcomingDeadlines.length} รายการ)
                 </h2>
               </div>
               <div class="card-body" style="padding: 16px;">
@@ -622,9 +682,9 @@ const Pages = {
       const service = Utils.getService(r.serviceType);
       const reqUser = this.getUserByEmail(r.submittedBy);
       const isUrgent = r.daysLeft <= 1;
-      const urgentColor = isUrgent ? '#DC2626' : '#F97316';
+      const urgentColor = isUrgent ? '#DC2626' : '#F86E0B';
       const urgentBg = isUrgent ? '#FEE2E2' : '#FFF7ED';
-      const urgentIcon = isUrgent ? '🔴' : '🟠';
+      const urgentIcon = Icons.get('dot');   // สีกำหนดด้วย urgentColor ด้านล่าง
 
       let daysText = '';
       if (r.daysLeft < 0) {
@@ -643,13 +703,13 @@ const Pages = {
                       <div style="flex: 1;">
                         <div style="font-weight: 600; color: #1F2937;">${Utils.escapeHtml(r.projectName)}</div>
                         <div style="font-size: 0.85rem; color: #6B7280;">
-                          ${service?.icon || ''} ${service?.nameTh || r.serviceType} • 
+                          <span class="request-icon request-icon-sm" style="color: ${service?.color || 'var(--jaun-navy)'}">${service?.iconSvg || ''}</span> ${service?.nameTh || r.serviceType} • 
                           ${reqUser ? Utils.escapeHtml(reqUser.name) : 'ไม่ทราบผู้ส่ง'}
                         </div>
                       </div>
                       <div style="text-align: right;">
                         <div style="font-weight: 700; color: ${urgentColor}; font-size: 0.95rem;">${daysText}</div>
-                        <div style="font-size: 0.8rem; color: #9CA3AF;">📅 ${Utils.formatDate(r.deadline)}</div>
+                        <div style="font-size: 0.8rem; color: #9CA3AF;">${Icons.get('calendar')} ${Utils.formatDate(r.deadline)}</div>
                       </div>
                       <button class="btn btn-sm" style="background: ${urgentColor}; color: white;" onclick="Components.showRequestDetail('${r.id}')">
                         ดู
@@ -674,9 +734,9 @@ const Pages = {
             <!-- Super Admin Section -->
             <div class="card mb-lg" style="border: 2px solid var(--color-navy-blue);">
               <div class="card-header">
-                <h2 class="card-title">⭐ Super Admin Panel</h2>
+                <h2 class="card-title">${Icons.get('star')} Super Admin Panel</h2>
                 <button class="btn btn-primary btn-sm" onclick="Pages.showUserManagement()">
-                  👥 จัดการผู้ใช้
+                  ${Icons.get('users')} จัดการผู้ใช้
                 </button>
               </div>
               <div class="card-body">
@@ -692,7 +752,7 @@ const Pages = {
             <!-- Analytics Charts Section -->
             <div class="card mb-lg">
               <div class="card-header">
-                <h2 class="card-title">📊 Analytics Dashboard</h2>
+                <h2 class="card-title">${Icons.get('chart')} Analytics Dashboard</h2>
               </div>
               <div class="card-body">
                 <div class="charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
@@ -715,7 +775,7 @@ const Pages = {
           
           <!-- Create Request Button -->
           <button class="btn btn-primary btn-lg btn-block mb-lg" onclick="App.navigate('createRequest')">
-            ➕ สร้างคำขอใหม่
+            ${Icons.get('plus')} สร้างคำขอใหม่
           </button>
           
           <!-- Search & Filter -->
@@ -740,7 +800,7 @@ const Pages = {
           <!-- Requests List -->
           <div class="card">
             <div class="card-header">
-              <h2 class="card-title">📋 คำขอทั้งหมด</h2>
+              <h2 class="card-title">${Icons.get('clipboard')} คำขอทั้งหมด</h2>
             </div>
             <div class="card-body" id="requests-list">
               ${this.renderRequestsList(this.allRequests)}
@@ -761,7 +821,7 @@ const Pages = {
 
   renderRequestsList(requests, groupByService = true) {
     if (requests.length === 0) {
-      return Components.emptyState('📋', 'ยังไม่มีคำขอ');
+      return Components.emptyState(Icons.get('clipboard', 'icon-xl'), 'ยังไม่มีคำขอ');
     }
 
     // ถ้าต้องการแยกตามประเภทบริการ
@@ -782,7 +842,7 @@ const Pages = {
           html += `
             <div class="service-section" style="margin-bottom: 24px;">
               <div class="service-section-header" style="display: flex; align-items: center; gap: 12px; padding: 16px; background: linear-gradient(135deg, ${service.color}15, ${service.color}05); border-radius: 12px; margin-bottom: 16px; border-left: 4px solid ${service.color};">
-                <span style="font-size: 2rem;">${service.icon}</span>
+                <span class="service-icon-md" style="color: ${service.color}">${service.iconSvg || service.icon}</span>
                 <div>
                   <h3 style="margin: 0; color: ${service.color}; font-size: 1.1rem;">${service.name}</h3>
                   <span style="color: var(--color-medium-grey); font-size: 0.9rem;">${service.nameTh} (${serviceRequests.length} รายการ)</span>
@@ -959,22 +1019,22 @@ const Pages = {
     const content = `
       <!-- Search Box -->
       <div style="margin-bottom: 16px;">
-        <input type="text" class="form-input" id="user-search" placeholder="🔍 ค้นหาผู้ใช้..." oninput="Pages.filterUserList()" style="width: 100%;">
+        <input type="text" class="form-input" id="user-search" placeholder="ค้นหาผู้ใช้..." oninput="Pages.filterUserList()" style="width: 100%;">
       </div>
       
       <!-- User Stats -->
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
         <div style="text-align: center; padding: 12px; background: #EFF6FF; border-radius: 8px;">
           <div style="font-size: 1.5rem; font-weight: bold; color: #2563EB;">${this.allUsers.filter(u => Auth.getUserRole(u.email) === 'user').length}</div>
-          <div style="font-size: 0.85rem; color: #6B7280;">👤 Users</div>
+          <div style="font-size: 0.85rem; color: #6B7280;">${Icons.get('user')} Users</div>
         </div>
         <div style="text-align: center; padding: 12px; background: #ECFDF5; border-radius: 8px;">
           <div style="font-size: 1.5rem; font-weight: bold; color: #059669;">${this.allUsers.filter(u => Auth.getUserRole(u.email) === 'admin').length}</div>
-          <div style="font-size: 0.85rem; color: #6B7280;">🛡️ Admins</div>
+          <div style="font-size: 0.85rem; color: #6B7280;">${Icons.get('shield')} Admins</div>
         </div>
         <div style="text-align: center; padding: 12px; background: #FEF3C7; border-radius: 8px;">
           <div style="font-size: 1.5rem; font-weight: bold; color: #D97706;">${this.allUsers.filter(u => Auth.isSuperAdmin(u.email)).length}</div>
-          <div style="font-size: 0.85rem; color: #6B7280;">⭐ Super Admins</div>
+          <div style="font-size: 0.85rem; color: #6B7280;">${Icons.get('star')} Super Admins</div>
         </div>
       </div>
       
@@ -982,7 +1042,9 @@ const Pages = {
       <div id="user-list-container" style="max-height: 350px; overflow-y: auto;">
         ${this.allUsers.map(user => {
       const role = Auth.isSuperAdmin(user.email) ? 'superadmin' : Auth.isAdmin(user.email) ? 'admin' : 'user';
-      const roleLabel = role === 'superadmin' ? '⭐ Super Admin' : role === 'admin' ? '🛡️ Admin' : '👤 User';
+      const roleLabel = role === 'superadmin' ? Icons.get('star') + ' Super Admin'
+        : role === 'admin' ? Icons.get('shield') + ' Admin'
+        : Icons.get('user') + ' User';
       const roleColor = role === 'superadmin' ? '#D97706' : role === 'admin' ? '#059669' : '#2563EB';
       const requestCount = userRequestCounts[user.email] || 0;
       const isMe = user.email === Auth.getUser().email;
@@ -997,11 +1059,11 @@ const Pages = {
                   ${isMe ? '<span class="badge badge-progress">คุณ</span>' : ''}
                 </div>
                 <div style="font-size: 0.9rem; color: #6B7280; margin-bottom: 8px;">
-                  📧 ${Utils.escapeHtml(user.email)}
+                  ${Icons.get('mail')} ${Utils.escapeHtml(user.email)}
                 </div>
                 <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.85rem; color: #6B7280;">
-                  <span>🏢 ${Utils.escapeHtml(user.department || 'ไม่ระบุ')}</span>
-                  <span>📋 ${requestCount} คำขอ</span>
+                  <span>${Icons.get('building')} ${Utils.escapeHtml(user.department || 'ไม่ระบุ')}</span>
+                  <span>${Icons.get('clipboard')} ${requestCount} คำขอ</span>
                 </div>
               </div>
               <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
@@ -1012,15 +1074,15 @@ const Pages = {
                   <div style="display: flex; gap: 4px;">
                     ${role === 'user' ? `
                       <button class="btn btn-success btn-sm" onclick="Pages.promoteToAdmin('${user.email}')" title="เลื่อนขั้นเป็น Admin">
-                        ⬆️ Admin
+                        ${Icons.get('arrowUp')} Admin
                       </button>
                     ` : `
                       <button class="btn btn-warning btn-sm" onclick="Pages.demoteToUser('${user.email}')" title="ลดขั้นเป็น User">
-                        ⬇️ User
+                        ${Icons.get('arrowDown')} User
                       </button>
                     `}
                     <button class="btn btn-danger btn-sm" onclick="Pages.deleteUser('${user.id}')" title="ลบผู้ใช้">
-                      🗑️
+                      ${Icons.get('trash')} 
                     </button>
                   </div>
                 ` : ''}
@@ -1032,7 +1094,7 @@ const Pages = {
       </div>
     `;
 
-    Utils.createModal('👥 จัดการผู้ใช้งาน (' + this.allUsers.length + ' คน)', content, 'modal-lg');
+    Utils.createModal('จัดการผู้ใช้งาน (' + this.allUsers.length + ' คน)', content, 'modal-lg');
   },
 
   filterUserList() {

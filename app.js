@@ -39,7 +39,7 @@ const App = {
         app.innerHTML = `
       <div class="login-page">
         <div class="login-card fade-in">
-          <h1 class="login-title" style="color: var(--color-danger);">⚠️ ยังไม่ได้ตั้งค่า</h1>
+          <h1 class="login-title" style="color: var(--color-danger);">${Icons.get('alert')} ยังไม่ได้ตั้งค่า</h1>
           <p class="login-subtitle">กรุณาแก้ไขไฟล์ <code>js/config.js</code></p>
           
           <div class="alert alert-danger text-left">

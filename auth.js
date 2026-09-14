@@ -37,7 +37,7 @@ const Auth = {
             text: 'signin_with',
             shape: 'rectangular',
             logo_alignment: 'left',
-            width: 280
+            width: 356   // ให้เต็มความกว้างการ์ด (เพดานของ Google คือ 400)
         });
     },
 
