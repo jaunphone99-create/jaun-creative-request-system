@@ -136,6 +136,15 @@ const Utils = {
     },
 
     /**
+     * Escape สำหรับใส่ใน attribute เช่น value="..."
+     * escapeHtml ใช้ textContent -> innerHTML ซึ่งแปลงแค่ & < > (ไม่แปลง ")
+     * ถ้าค่ามีเครื่องหมาย " จะไปปิด attribute ก่อนกำหนด ทำให้ข้อความถูกตัดหาย
+     */
+    escapeAttr(text) {
+        return this.escapeHtml(text).replace(/"/g, '&quot;');
+    },
+
+    /**
      * Format วันที่เป็นภาษาไทย
      */
     formatDate(dateString) {

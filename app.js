@@ -63,10 +63,29 @@ const App = {
      * Navigate ไปหน้าอื่น
      */
     async navigate(view, params = null) {
+        /**
+         * แยก "วาดหน้าเดิมซ้ำ" ออกจาก "เปลี่ยนหน้าจริง"
+         *
+         * ทุกครั้งที่แอดมินกดอนุมัติ/ปฏิเสธ ระบบจะเรียก navigate('adminDashboard')
+         * ทั้งที่อยู่หน้านั้นอยู่แล้ว ถ้าเลื่อนขึ้นบนสุดทุกครั้ง คนที่ไล่เคลียร์งาน
+         * ที่อยู่กลางรายการจะต้องเลื่อนลงมาใหม่ทุกรอบ
+         */
+        const isRefresh = this.currentView === view;
+        const scrollY = window.scrollY;
+
         this.currentView = view;
         this.currentParams = params;
         await this.render();
-        window.scrollTo(0, 0);
+
+        /**
+         * ต้องใส่ behavior: 'instant' เพราะ CSS ตั้ง scroll-behavior: smooth ไว้
+         * (มีไว้ให้ลิงก์ในหน้าเลื่อนนุ่มๆ) ถ้าไม่กำหนด การกู้ตำแหน่งจะกลายเป็น
+         * แอนิเมชันไล่ลงมาหลังกดปุ่ม ซึ่งดูกระตุกและช้ากว่าเดิม
+         *
+         * render() อาจเด้งกลับหน้า login เองถ้า session หลุด กรณีนั้นถือว่าเปลี่ยนหน้า
+         */
+        const top = (isRefresh && this.currentView === view) ? scrollY : 0;
+        window.scrollTo({ top, behavior: 'instant' });
     },
 
     /**

@@ -69,9 +69,7 @@ const Auth = {
      */
     async handleCredentialResponse(response) {
         try {
-            Utils.showLoading();
-
-            // Decode JWT token
+            // ข้อมูลตัวตนมาจาก JWT ที่ Google เซ็นรับรองมาแล้ว ไม่ต้องถามชีต
             const payload = this.decodeJWT(response.credential);
 
             if (!payload) {
@@ -84,32 +82,55 @@ const Auth = {
                 picture: payload.picture
             };
 
-            // Upsert user ใน Google Sheets
-            const result = await API.upsertUser(userData);
-
-            // กำหนด role
             const role = this.getUserRole(userData.email);
 
-            // เก็บ user data
-            this.currentUser = {
-                ...userData,
-                ...result.data,
-                role: role
-            };
-
-            // เก็บใน localStorage
+            /**
+             * เข้าระบบทันที ไม่รอเขียนลงชีต
+             *
+             * เดิมรอ API.upsertUser() ให้เสร็จก่อนถึงจะเข้าได้ ซึ่งวัดได้ 33 วินาที
+             * ตอน Apps Script ตอบช้า และถ้าคำสั่งนั้นล้มเหลว จะเข้าระบบไม่ได้เลย
+             * ทั้งที่ Google ยืนยันตัวตนให้แล้ว - เป็นที่มาของอาการ "เข้าได้บ้างไม่ได้บ้าง"
+             *
+             * การบันทึกลงชีตย้ายไปทำเบื้องหลังแทน (ดู syncUserRecord)
+             * ส่วนแผนกจะถูกเติมให้เองตอนโหลดข้อมูลหน้า Dashboard
+             */
+            this.currentUser = { ...userData, role: role };
             localStorage.setItem('jaun_user', JSON.stringify(this.currentUser));
 
-            Utils.hideLoading();
             Utils.showToast(`ยินดีต้อนรับ ${this.currentUser.name}!`, 'success');
-
-            // Navigate to appropriate dashboard
             App.navigate(role === 'user' ? 'userDashboard' : 'adminDashboard');
+
+            this.syncUserRecord(userData);
 
         } catch (error) {
             Utils.hideLoading();
             console.error('Login error:', error);
             Utils.showToast('เข้าสู่ระบบไม่สำเร็จ: ' + error.message, 'error');
+        }
+    },
+
+    /**
+     * บันทึกผู้ใช้ลงชีตแบบเบื้องหลัง (สร้างแถวใหม่ถ้ายังไม่มี + อัปเดตเวลาเข้าใช้ล่าสุด)
+     *
+     * ล้มเหลวได้โดยไม่กระทบการใช้งาน เพราะผู้ใช้เข้าระบบไปแล้ว
+     * ถ้าพลาดรอบนี้ รอบหน้าที่ล็อกอินจะบันทึกให้เอง
+     */
+    async syncUserRecord(userData) {
+        try {
+            const result = await API.upsertUser(userData);
+            if (!result || !result.data || !this.currentUser) return;
+            if (this.currentUser.email !== userData.email) return;   // เปลี่ยนผู้ใช้ไปแล้ว
+
+            // เติมข้อมูลจากชีต (แผนก, รหัส) แต่ role ต้องคงค่าที่คำนวณจาก CONFIG
+            this.currentUser = {
+                ...this.currentUser,
+                ...result.data,
+                picture: this.currentUser.picture,
+                role: this.currentUser.role
+            };
+            localStorage.setItem('jaun_user', JSON.stringify(this.currentUser));
+        } catch (error) {
+            console.warn('บันทึกข้อมูลผู้ใช้ลงชีตไม่สำเร็จ (ไม่กระทบการใช้งาน):', error.message);
         }
     },
 
@@ -194,6 +215,7 @@ const Auth = {
             Pages.invalidateCache();
             Pages.allRequests = [];
             Pages.allUsers = [];
+            Pages.adminFilters = { search: '', status: '', service: '' };
         }
         Utils.showToast('ออกจากระบบเรียบร้อย', 'success');
         App.navigate('login');

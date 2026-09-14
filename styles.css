@@ -1634,3 +1634,118 @@ a:hover {
 .card-title .icon {
   margin-right: 0.4em;
 }
+
+
+/* ===================== กล่องงานใกล้ครบกำหนด =====================
+   เดิมทั้งกล่องเป็นพื้นส้มไล่เฉด และหัวข้อเป็นตัวหนังสือขาวบนส้ม (ความคมชัด 2.91:1)
+   CI ระบุว่าส้มควรเป็น "จุดเน้น" ไม่ใช่พื้นหลัง จึงเปลี่ยนเป็น
+   พื้นขาว + เส้นส้มคาดซ้าย + หัวข้อพื้นน้ำเงิน ซึ่งได้ 16.45:1 */
+.deadline-card {
+  background: var(--jaun-white);
+  border: 1px solid #E5E7EB;
+  border-left: 5px solid var(--jaun-orange);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.deadline-card > .card-header {
+  background: var(--jaun-navy);
+  border-radius: var(--radius-md);
+  border-bottom: 0;
+  /* ต้องกำหนด padding เอง เพราะ .card-header เดิมมีแค่ padding-bottom
+     ซึ่งพอใส่พื้นหลังแล้วตัวหนังสือจะชิดขอบซ้ายกับขอบบน */
+  padding: 12px 16px;
+}
+
+.deadline-card > .card-header .card-title {
+  color: var(--jaun-white);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ไอคอนเตือนใช้สีส้มของแบรนด์ เป็นจุดเน้นเดียวบนแถบน้ำเงิน */
+.deadline-card > .card-header .card-title .icon {
+  color: var(--jaun-orange);
+  margin-right: 0;
+}
+
+.deadline-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  border-left: 4px solid;
+}
+
+.deadline-item:last-child { margin-bottom: 0; }
+
+.deadline-item-urgent { background: #FEF2F2; border-left-color: var(--color-danger); }
+.deadline-item-soon   { background: #FFF7ED; border-left-color: var(--jaun-orange); }
+
+.deadline-dot { display: inline-flex; align-items: center; }
+.deadline-dot .icon { width: 0.75rem; height: 0.75rem; }
+.deadline-item-urgent .deadline-dot { color: var(--color-danger); }
+.deadline-item-soon   .deadline-dot { color: var(--jaun-orange); }
+
+.deadline-body { flex: 1; min-width: 0; }
+
+.deadline-name {
+  font-weight: 600;
+  color: var(--jaun-dark-text);
+  /* ชื่อโครงการยาวๆ ที่ไม่มีช่องว่าง (เลขอินวอยซ์/ชื่อไฟล์อังกฤษ) จะล้นออกนอกกล่อง
+     ไปทับตัวเลขวันที่เกินกำหนด ใช้ anywhere เพราะลดความกว้างขั้นต่ำของกล่องด้วย */
+  overflow-wrap: anywhere;
+}
+
+.deadline-meta {
+  font-size: 0.85rem;
+  color: var(--color-medium-grey);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.deadline-right { text-align: right; flex-shrink: 0; }
+
+.deadline-days { font-weight: 700; font-size: 0.95rem; }
+
+/* เฉดเข้มกว่าสีขอบ เพราะต้องอ่านออกบนพื้นอ่อน (เกณฑ์ 4.5:1)
+   สีขอบซ้ายเป็นแค่เส้น จึงใช้สีสดได้ */
+.deadline-item-urgent .deadline-days { color: #C73838; }
+.deadline-item-soon   .deadline-days { color: #B75108; }
+
+.deadline-date {
+  font-size: 0.8rem;
+  color: var(--color-medium-grey);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+.deadline-item .btn { flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  /* จอแคบ: วางเป็นแนวตั้ง ไม่งั้นวันที่กับปุ่มจะเบียดจนอ่านไม่ออก
+     ใช้ grid กำหนดตำแหน่งลูกทุกตัวตรงๆ เพราะ flex-wrap + flex-basis 100%
+     จะดันจุดสีขึ้นไปอยู่บรรทัดของตัวเองโดยไม่ได้ตั้งใจ */
+  .deadline-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 8px;
+  }
+  .deadline-dot   { grid-area: 1 / 1; }
+  .deadline-body  { grid-area: 1 / 2 / 2 / 4; }
+  .deadline-right { grid-area: 2 / 2; text-align: left; }
+  .deadline-date  { justify-content: flex-start; }
+  .deadline-item .btn { grid-area: 2 / 3; }
+}

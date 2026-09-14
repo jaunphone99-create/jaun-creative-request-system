@@ -287,7 +287,7 @@ const Components = {
     let commonFields = `
       <div class="form-group">
         <label class="form-label">ชื่อโครงการ (Project Title) *</label>
-        <input type="text" class="form-input" name="projectName" value="${Utils.escapeHtml(existingData.projectName || '')}" required placeholder="ระบุหมายเลขอินวอยด์, คำสั่งซื้อ หรือรายละเอียด">
+        <input type="text" class="form-input" name="projectName" value="${Utils.escapeAttr(existingData.projectName || '')}" required placeholder="ระบุหมายเลขอินวอยด์, คำสั่งซื้อ หรือรายละเอียด">
       </div>
       <div class="form-group">
         <label class="form-label">รายละเอียด (Description) *</label>
@@ -307,7 +307,7 @@ const Components = {
         </div>
         <div class="form-group">
           <label class="form-label">ลิงก์ไฟล์คลิป (Google Drive) *</label>
-          <input type="url" class="form-input" name="driveLink" value="${Utils.escapeHtml(existingData.driveLink || '')}" required placeholder="https://drive.google.com/...">
+          <input type="url" class="form-input" name="driveLink" value="${Utils.escapeAttr(existingData.driveLink || '')}" required placeholder="https://drive.google.com/...">
         </div>
       `;
     }
@@ -359,7 +359,7 @@ const Components = {
         </div>
         <div class="form-group">
           <label class="form-label">ลิงก์ TikTok ตัวอย่าง (ถ้ามี)</label>
-          <input type="url" class="form-input" name="tiktokRef" value="${Utils.escapeHtml(existingData.tiktokRef || '')}" placeholder="https://tiktok.com/...">
+          <input type="url" class="form-input" name="tiktokRef" value="${Utils.escapeAttr(existingData.tiktokRef || '')}" placeholder="https://tiktok.com/...">
         </div>
       `;
     }
@@ -370,7 +370,7 @@ const Components = {
       let photoFields = `
       <div class="form-group">
         <label class="form-label">ชื่อโครงการ / รายละเอียดงานถ่าย *</label>
-        <input type="text" class="form-input" name="projectName" value="${Utils.escapeHtml(existingData.projectName || '')}" required placeholder="ระบุหมายเลขอินวอยด์, คำสั่งซื้อ หรือรายละเอียดสินค้าที่จะถ่าย">
+        <input type="text" class="form-input" name="projectName" value="${Utils.escapeAttr(existingData.projectName || '')}" required placeholder="ระบุหมายเลขอินวอยด์, คำสั่งซื้อ หรือรายละเอียดสินค้าที่จะถ่าย">
       </div>
       <div class="form-group">
         <label class="form-label">${Icons.get('calendar')} วันและเวลาที่ต้องการถ่าย *</label>

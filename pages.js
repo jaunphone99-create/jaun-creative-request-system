@@ -10,6 +10,15 @@ const Pages = {
   selectedService: null,
   editingRequest: null,
 
+  /**
+   * ค่าตัวกรองของหน้าแอดมิน
+   *
+   * ต้องเก็บไว้เพราะทุกครั้งที่แอดมินกดอนุมัติ/ปฏิเสธ ระบบจะวาดหน้าใหม่ทั้งหน้า
+   * ถ้าไม่จำไว้ ช่อง <select> จะกลับไปเป็น "ทั้งหมด" ทำให้ต้องเลือกตัวกรองใหม่
+   * ทุกครั้งที่เคลียร์งานไปหนึ่งชิ้น
+   */
+  adminFilters: { search: '', status: '', service: '' },
+
   // เวลาที่โหลดข้อมูลล่าสุด (0 = ยังไม่เคยโหลด)
   _loadedAt: 0,
   CACHE_TTL_MS: 30000,
@@ -34,6 +43,22 @@ const Pages = {
       this.allUsers = result.data.users || [];
       this.allRequests = result.data.requests || [];
       this._loadedAt = Date.now();
+
+      /**
+       * เติมแผนกให้ session จากข้อมูลในชีต
+       *
+       * ตอนล็อกอินเราไม่รอ upsertUser แล้ว (ดู Auth.handleCredentialResponse)
+       * แผนกจึงยังไม่มีในตอนแรก แต่ getAll คืนแถวของผู้ใช้เองมาด้วยอยู่แล้ว
+       * จึงหยิบมาเติมตรงนี้ได้เลย ทันก่อนที่หน้าจะถูกวาด
+       */
+      if (me && !me.department) {
+        const myRow = this.allUsers.find(u => u.email === me.email);
+        if (myRow && myRow.department) {
+          Auth.currentUser.department = myRow.department;
+          localStorage.setItem('jaun_user', JSON.stringify(Auth.currentUser));
+        }
+      }
+
       return true;
     } catch (error) {
       console.error('Load data error:', error);
@@ -327,11 +352,20 @@ const Pages = {
 
     try {
       Utils.showLoading();
-      await API.updateUserDepartment(Auth.getUser().email, select.value);
+      const me = Auth.getUser();
+      try {
+        await API.updateUserDepartment(me.email, select.value);
+      } catch (err) {
+        // เคสนี้เกิดได้ถ้าการบันทึกผู้ใช้เบื้องหลังตอนล็อกอินล้มเหลว
+        // สร้างแถวให้ก่อนแล้วค่อยบันทึกแผนกซ้ำ
+        if (!/not found/i.test(err.message)) throw err;
+        await API.upsertUser({ email: me.email, name: me.name, picture: me.picture });
+        await API.updateUserDepartment(me.email, select.value);
+      }
 
       // Update local user
-      const me = this.allUsers.find(u => u.email === Auth.getUser().email);
-      if (me) me.department = select.value;
+      const myRow = this.allUsers.find(u => u.email === me.email);
+      if (myRow) myRow.department = select.value;
       Auth.currentUser.department = select.value;
       localStorage.setItem('jaun_user', JSON.stringify(Auth.currentUser));
 
@@ -671,9 +705,9 @@ const Pages = {
           
           ${upcomingDeadlines.length > 0 ? `
             <!-- Deadline Warning Section -->
-            <div class="card mb-lg" style="border: 2px solid #F86E0B; background: linear-gradient(135deg, #FFF4EA, #FFE6D2);">
-              <div class="card-header" style="background: linear-gradient(135deg, #F86E0B, #C35608); color: #FFFFFF; border-radius: 8px 8px 0 0;">
-                <h2 class="card-title" style="color: white; display: flex; align-items: center; gap: 8px;">
+            <div class="card mb-lg deadline-card">
+              <div class="card-header">
+                <h2 class="card-title">
                   ${Icons.get('alert')} งานใกล้ครบกำหนด (${upcomingDeadlines.length} รายการ)
                 </h2>
               </div>
@@ -681,10 +715,15 @@ const Pages = {
                 ${upcomingDeadlines.map(r => {
       const service = Utils.getService(r.serviceType);
       const reqUser = this.getUserByEmail(r.submittedBy);
-      const isUrgent = r.daysLeft <= 1;
-      const urgentColor = isUrgent ? '#DC2626' : '#F86E0B';
-      const urgentBg = isUrgent ? '#FEE2E2' : '#FFF7ED';
-      const urgentIcon = Icons.get('dot');   // สีกำหนดด้วย urgentColor ด้านล่าง
+      /**
+       * แยกสองระดับให้สีบอกอะไรได้จริง
+       *   แดง = เลยกำหนดแล้ว หรือครบกำหนดวันนี้ (ต้องจัดการทันที)
+       *   ส้ม = ยังเหลือเวลา 1-2 วัน (เตือนล่วงหน้า)
+       * เดิมใช้เกณฑ์ daysLeft <= 1 ทำให้ "เหลือ 1 วัน" แดงเท่ากับ
+       * "เกินกำหนด 62 วัน" สีจึงไม่ได้ช่วยจัดลำดับความสำคัญ
+       */
+      const isOverdue = r.daysLeft <= 0;
+      const toneClass = isOverdue ? 'deadline-item-urgent' : 'deadline-item-soon';
 
       let daysText = '';
       if (r.daysLeft < 0) {
@@ -698,21 +737,21 @@ const Pages = {
       }
 
       return `
-                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: ${urgentBg}; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid ${urgentColor};">
-                      <span style="font-size: 1.5rem;">${urgentIcon}</span>
-                      <div style="flex: 1;">
-                        <div style="font-weight: 600; color: #1F2937;">${Utils.escapeHtml(r.projectName)}</div>
-                        <div style="font-size: 0.85rem; color: #6B7280;">
-                          <span class="request-icon request-icon-sm" style="color: ${service?.color || 'var(--jaun-navy)'}">${service?.iconSvg || ''}</span> ${service?.nameTh || r.serviceType} • 
-                          ${reqUser ? Utils.escapeHtml(reqUser.name) : 'ไม่ทราบผู้ส่ง'}
+                    <div class="deadline-item ${toneClass}">
+                      <span class="deadline-dot">${Icons.get('dot')}</span>
+                      <div class="deadline-body">
+                        <div class="deadline-name">${Utils.escapeHtml(r.projectName)}</div>
+                        <div class="deadline-meta">
+                          <span class="request-icon request-icon-sm" style="color: ${service?.color || 'var(--jaun-navy)'}">${service?.iconSvg || ''}</span>
+                          ${service?.nameTh || r.serviceType} · ${reqUser ? Utils.escapeHtml(reqUser.name) : 'ไม่ทราบผู้ส่ง'}
                         </div>
                       </div>
-                      <div style="text-align: right;">
-                        <div style="font-weight: 700; color: ${urgentColor}; font-size: 0.95rem;">${daysText}</div>
-                        <div style="font-size: 0.8rem; color: #9CA3AF;">${Icons.get('calendar')} ${Utils.formatDate(r.deadline)}</div>
+                      <div class="deadline-right">
+                        <div class="deadline-days">${daysText}</div>
+                        <div class="deadline-date">${Icons.get('calendar')} ${Utils.formatDate(r.deadline)}</div>
                       </div>
-                      <button class="btn btn-sm" style="background: ${urgentColor}; color: white;" onclick="Components.showRequestDetail('${r.id}')">
-                        ดู
+                      <button class="btn btn-sm btn-secondary" onclick="Components.showRequestDetail('${r.id}')">
+                        ${Icons.get('eye')} ดู
                       </button>
                     </div>
                   `;
@@ -781,18 +820,18 @@ const Pages = {
           <!-- Search & Filter -->
           <div class="card mb-lg">
             <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
-              <input type="text" class="form-input" id="search-input" placeholder="ค้นหาตามชื่อ, โครงการ..." style="flex: 1; min-width: 200px;" oninput="Pages.filterRequests()">
+              <input type="text" class="form-input" id="search-input" placeholder="ค้นหาตามชื่อ, โครงการ..." style="flex: 1; min-width: 200px;" value="${Utils.escapeAttr(this.adminFilters.search)}" oninput="Pages.filterRequests()">
               <select class="form-select" id="status-filter" style="width: auto;" onchange="Pages.filterRequests()">
-                <option value="">สถานะทั้งหมด</option>
-                <option value="pending">รออนุมัติ</option>
-                <option value="progress">กำลังดำเนินการ</option>
-                <option value="revision">ส่งกลับแก้ไข</option>
-                <option value="completed">เสร็จสมบูรณ์</option>
-                <option value="rejected">ปฏิเสธ</option>
+                ${Utils.createSelectOptions([
+                  { value: '', label: 'สถานะทั้งหมด' },
+                  ...Object.keys(CONFIG.STATUS_CONFIG).map(k => ({ value: k, label: CONFIG.STATUS_CONFIG[k].label }))
+                ], this.adminFilters.status)}
               </select>
               <select class="form-select" id="service-filter" style="width: auto;" onchange="Pages.filterRequests()">
-                <option value="">บริการทั้งหมด</option>
-                ${CONFIG.SERVICES.map(s => `<option value="${s.id}">${s.icon} ${s.nameTh}</option>`).join('')}
+                ${Utils.createSelectOptions([
+                  { value: '', label: 'บริการทั้งหมด' },
+                  ...CONFIG.SERVICES.map(s => ({ value: s.id, label: `${s.icon} ${s.nameTh}` }))
+                ], this.adminFilters.service)}
               </select>
             </div>
           </div>
@@ -812,6 +851,11 @@ const Pages = {
   },
 
   afterRenderAdminDashboard() {
+    // ตัวกรองถูกใส่ค่ากลับไปแล้วตอนวาด แต่ "รายการ" ยังเป็นชุดเต็ม
+    // จึงต้องสั่งกรองซ้ำ ไม่งั้นช่องเลือกกับรายการที่เห็นจะไม่ตรงกัน
+    const f = this.adminFilters;
+    if (f.search || f.status || f.service) this.filterRequests();
+
     // Render charts if Super Admin
     const user = Auth.getUser();
     if (Auth.isSuperAdmin(user.email) && typeof Charts !== 'undefined') {
@@ -879,6 +923,13 @@ const Pages = {
     const searchTerm = searchInput.value.toLowerCase();
     const statusValue = statusFilter.value;
     const serviceValue = serviceFilter?.value || '';
+
+    // จำไว้ใช้ตอนหน้าถูกวาดใหม่ (เช่น หลังกดอนุมัติ)
+    this.adminFilters = {
+      search: searchInput.value,
+      status: statusValue,
+      service: serviceValue
+    };
 
     let filtered = this.allRequests;
 
