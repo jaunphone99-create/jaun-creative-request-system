@@ -10,20 +10,99 @@ const Pages = {
   selectedService: null,
   editingRequest: null,
 
+  // เวลาที่โหลดข้อมูลล่าสุด (0 = ยังไม่เคยโหลด)
+  _loadedAt: 0,
+  CACHE_TTL_MS: 30000,
+
   /**
    * โหลดข้อมูลทั้งหมด
+   *
+   * การเรียก API หนึ่งครั้งใช้เวลา 3-6 วินาที และดึงข้อมูลมา ~589 KB
+   * เดิมเรียกใหม่ทุกครั้งที่เปลี่ยนหน้า ทำให้สลับหน้าไปมาต้องรอทุกรอบ
+   * จึงเก็บข้อมูลไว้ใช้ซ้ำภายใน 30 วินาที
+   *
+   * ส่ง force = true เมื่อต้องการข้อมูลสดจริงๆ (เช่น หลังสร้างคำขอใหม่)
    */
-  async loadData() {
+  async loadData(force = false) {
+    const stillFresh = this._loadedAt && (Date.now() - this._loadedAt) < this.CACHE_TTL_MS;
+    if (!force && stillFresh) return true;
+
     try {
-      const result = await API.getAll();
+      // ส่ง email ไปให้เซิร์ฟเวอร์กรองข้อมูลให้ก่อน (ดู API.getAll)
+      const me = Auth.getUser();
+      const result = await API.getAll(me ? me.email : null);
       this.allUsers = result.data.users || [];
       this.allRequests = result.data.requests || [];
+      this._loadedAt = Date.now();
       return true;
     } catch (error) {
       console.error('Load data error:', error);
+
+      // ถ้าเคยโหลดสำเร็จมาก่อน ให้ใช้ข้อมูลเดิมต่อไปดีกว่าขึ้นจอ error
+      // (Apps Script ล้มเป็นครั้งคราว ข้อมูลเก่าไม่กี่นาทียังใช้งานได้)
+      if (this.allRequests.length > 0) {
+        Utils.showToast('เชื่อมต่อไม่ได้ กำลังแสดงข้อมูลล่าสุดที่มีอยู่', 'warning');
+        return true;
+      }
+
       Utils.showToast('ไม่สามารถโหลดข้อมูลได้: ' + error.message, 'error');
       return false;
     }
+  },
+
+  /**
+   * หน้าแจ้งเตือนเมื่อโหลดข้อมูลไม่สำเร็จและไม่มีข้อมูลเก่าให้แสดง
+   *
+   * ถ้าไม่มีหน้านี้ ระบบจะวาด Dashboard ด้วยข้อมูลว่าง = ขึ้นเลข 0 ทุกช่อง
+   * ซึ่งผู้ใช้จะเข้าใจผิดว่าข้อมูลหายหมด ทั้งที่แค่เชื่อมต่อไม่ได้ชั่วคราว
+   */
+  renderLoadError(retryView) {
+    return `
+      <div class="login-page">
+        <div class="login-card fade-in">
+          <h1 class="login-title">เชื่อมต่อไม่ได้</h1>
+          <p class="login-subtitle">ไม่สามารถโหลดข้อมูลจากเซิร์ฟเวอร์ได้ในขณะนี้</p>
+
+          <div class="alert alert-danger text-left">
+            <p><strong>ข้อมูลของคุณยังอยู่ครบ</strong> ไม่ได้หายไปไหน</p>
+            <p style="margin-top: 8px;">ระบบลองเชื่อมต่อให้แล้ว 3 ครั้งแต่ยังไม่สำเร็จ
+            กรุณากดปุ่มด้านล่างเพื่อลองใหม่อีกครั้ง</p>
+          </div>
+
+          <button class="btn btn-primary btn-lg btn-block" onclick="App.navigate('${retryView}')">
+            ลองใหม่อีกครั้ง
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * ทิ้งข้อมูลที่เก็บไว้ บังคับให้โหลดใหม่รอบหน้า
+   */
+  invalidateCache() {
+    this._loadedAt = 0;
+  },
+
+  /**
+   * แก้ข้อมูลคำขอในหน่วยความจำ โดยไม่ต้องโหลดใหม่ทั้งก้อน
+   *
+   * ใช้หลังแอดมินกดอนุมัติ/ปฏิเสธ/แจ้งงานเสร็จ ซึ่งเปลี่ยนข้อมูลแค่ไม่กี่ช่อง
+   * ของคำขอเดียว ไม่มีเหตุผลต้องดึงข้อมูลใหม่ทั้ง 596 รายการ
+   *
+   * หมายเหตุ: ไม่ขยับ _loadedAt เพื่อให้ข้อมูลยังถูกรีเฟรชจริงทุก 30 วินาที
+   * จะได้เห็นงานที่คนอื่นแก้ด้วย
+   */
+  patchRequest(requestId, changes) {
+    const request = this.allRequests.find(r => r.id === requestId);
+    if (request) Object.assign(request, changes);
+  },
+
+  /**
+   * เอาคำขอออกจากหน่วยความจำ (ใช้หลังลบสำเร็จ)
+   */
+  removeRequestLocally(requestId) {
+    this.allRequests = this.allRequests.filter(r => r.id !== requestId);
   },
 
   /**
@@ -111,8 +190,10 @@ const Pages = {
 
   async renderUserDashboard() {
     Utils.showLoading();
-    await this.loadData();
+    const loaded = await this.loadData();
     Utils.hideLoading();
+
+    if (!loaded) return this.renderLoadError('userDashboard');
 
     const user = Auth.getUser();
     const userRequests = this.allRequests.filter(r => r.submittedBy === user.email);
@@ -189,6 +270,8 @@ const Pages = {
       await API.updateUserDepartment(Auth.getUser().email, select.value);
 
       // Update local user
+      const me = this.allUsers.find(u => u.email === Auth.getUser().email);
+      if (me) me.department = select.value;
       Auth.currentUser.department = select.value;
       localStorage.setItem('jaun_user', JSON.stringify(Auth.currentUser));
 
@@ -330,6 +413,7 @@ const Pages = {
     try {
       Utils.showLoading();
       await API.createRequest(data);
+      this.invalidateCache();   // มีรายการใหม่ในชีต ต้องโหลดสด
       Utils.hideLoading();
       Utils.showToast('ส่งคำขอเรียบร้อย!', 'success');
       App.navigate('userDashboard');
@@ -343,8 +427,10 @@ const Pages = {
 
   async renderEditRequest(requestId) {
     Utils.showLoading();
-    await this.loadData();
+    const loaded = await this.loadData();
     Utils.hideLoading();
+
+    if (!loaded) return this.renderLoadError('userDashboard');
 
     const user = Auth.getUser();
     const request = this.getRequestById(requestId);
@@ -437,6 +523,7 @@ const Pages = {
     try {
       Utils.showLoading();
       await API.updateRequest(requestId, updates);
+      this.patchRequest(requestId, updates);
       Utils.hideLoading();
       Utils.showToast('บันทึกการแก้ไขเรียบร้อย!', 'success');
       App.navigate('userDashboard');
@@ -477,8 +564,10 @@ const Pages = {
 
   async renderAdminDashboard() {
     Utils.showLoading();
-    await this.loadData();
+    const loaded = await this.loadData();
     Utils.hideLoading();
+
+    if (!loaded) return this.renderLoadError('adminDashboard');
 
     const user = Auth.getUser();
     const isSuperAdmin = Auth.isSuperAdmin(user.email);
@@ -764,6 +853,7 @@ const Pages = {
     try {
       Utils.showLoading();
       await API.updateRequest(requestId, { status: 'progress' });
+      this.patchRequest(requestId, { status: 'progress' });
       Utils.hideLoading();
       Utils.showToast('อนุมัติคำขอเรียบร้อย', 'success');
       App.navigate('adminDashboard');
@@ -784,6 +874,7 @@ const Pages = {
     try {
       Utils.showLoading();
       await API.updateRequest(requestId, { status: 'revision', adminComment: comment });
+      this.patchRequest(requestId, { status: 'revision', adminComment: comment });
       Utils.hideLoading();
       Utils.showToast('ส่งกลับแก้ไขเรียบร้อย', 'success');
       App.navigate('adminDashboard');
@@ -804,6 +895,7 @@ const Pages = {
     try {
       Utils.showLoading();
       await API.updateRequest(requestId, { status: 'rejected', rejectionReason: reason });
+      this.patchRequest(requestId, { status: 'rejected', rejectionReason: reason });
       Utils.hideLoading();
       Utils.showToast('ปฏิเสธคำขอเรียบร้อย', 'success');
       App.navigate('adminDashboard');
@@ -824,6 +916,11 @@ const Pages = {
     try {
       Utils.showLoading();
       await API.updateRequest(requestId, { status: 'completed', completedFileLink: fileLink });
+      this.patchRequest(requestId, {
+        status: 'completed',
+        completedFileLink: fileLink,
+        completedAt: new Date().toISOString()   // ฝั่งเซิร์ฟเวอร์ใส่ให้อัตโนมัติ
+      });
       Utils.hideLoading();
       Utils.showToast('แจ้งงานเสร็จเรียบร้อย', 'success');
       App.navigate('adminDashboard');
@@ -840,6 +937,7 @@ const Pages = {
     try {
       Utils.showLoading();
       await API.deleteRequest(requestId, Auth.getUser().email);
+      this.removeRequestLocally(requestId);
       Utils.hideLoading();
       Utils.showToast('ลบคำขอเรียบร้อย', 'success');
       App.navigate('adminDashboard');

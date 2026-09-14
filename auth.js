@@ -189,6 +189,12 @@ const Auth = {
         google.accounts.id.disableAutoSelect();
         this.currentUser = null;
         localStorage.removeItem('jaun_user');
+        // ทิ้งข้อมูลที่เก็บไว้ ไม่งั้นคนที่ล็อกอินต่อจะเห็นข้อมูลของคนก่อน
+        if (typeof Pages !== 'undefined') {
+            Pages.invalidateCache();
+            Pages.allRequests = [];
+            Pages.allUsers = [];
+        }
         Utils.showToast('ออกจากระบบเรียบร้อย', 'success');
         App.navigate('login');
     },
