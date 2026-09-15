@@ -115,7 +115,31 @@ const Utils = {
      */
     showLoading() {
         const overlay = document.getElementById('loading-overlay');
-        if (overlay) overlay.classList.remove('hidden');
+        if (!overlay) return;
+        overlay.classList.remove('hidden');
+
+        /**
+         * บอกผู้ใช้เมื่อรอนานผิดปกติ
+         *
+         * แอดมินโหลดข้อมูลใช้ 19-22 วินาที วงกลมหมุนเงียบๆ นานขนาดนั้นดูเหมือนค้าง
+         * คนจะกดรีเฟรช ซึ่งเริ่มโหลดใหม่หมดและยิงงานซ้อนเข้าเซิร์ฟเวอร์ ทำให้ช้าลงอีก
+         *
+         * เก็บตัวจับเวลาไว้บน element ไม่ใช่บน this เพราะ Utils ถูก freeze
+         * การเขียนค่าลง this จะเงียบไม่ทำงาน แล้วตัวจับเวลาจะไม่ถูกล้าง
+         */
+        let hint = overlay.querySelector('.loading-hint');
+        if (!hint) {
+            hint = document.createElement('p');
+            hint.className = 'loading-hint';
+            hint.setAttribute('role', 'status');
+            hint.setAttribute('aria-live', 'polite');
+            overlay.appendChild(hint);
+        }
+        hint.textContent = '';
+        clearTimeout(overlay._slowTimer);
+        overlay._slowTimer = setTimeout(() => {
+            hint.textContent = 'กำลังโหลดข้อมูล เซิร์ฟเวอร์ตอบช้ากว่าปกติ อาจใช้เวลาประมาณครึ่งนาที กรุณาอย่ารีเฟรชหน้านี้';
+        }, 6000);
     },
 
     /**
@@ -123,7 +147,11 @@ const Utils = {
      */
     hideLoading() {
         const overlay = document.getElementById('loading-overlay');
-        if (overlay) overlay.classList.add('hidden');
+        if (!overlay) return;
+        overlay.classList.add('hidden');
+        clearTimeout(overlay._slowTimer);
+        const hint = overlay.querySelector('.loading-hint');
+        if (hint) hint.textContent = '';
     },
 
     /**
