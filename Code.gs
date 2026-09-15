@@ -16,6 +16,21 @@ const ADMIN_EMAILS = [
   'loveininor@gmail.com'
 ];
 
+/**
+ * ใครได้รับเมลแจ้งเตือนจากระบบ
+ *
+ * แยกออกจาก SUPER_ADMIN_EMAILS / ADMIN_EMAILS โดยตั้งใจ
+ * สองลิสต์ข้างบนคุม "สิทธิ์เข้าใช้งาน" ถ้าลบชื่อออกจากตรงนั้นเพื่อเลี่ยงเมล
+ * คนนั้นจะเสียสิทธิ์แอดมินไปด้วย ซึ่งไม่ใช่สิ่งที่ต้องการ
+ *
+ * ลิสต์นี้คุมเฉพาะ "ใครได้รับเมล" แก้ที่เดียวมีผลกับทั้งเมลคำขอใหม่
+ * และเมลสรุปงานค้างประจำวัน
+ */
+const NOTIFY_EMAILS = [
+  'sanalohit01@gmail.com',
+  'jaunpowercilp@gmail.com'
+];
+
 const ADMIN_DOMAIN = '@jaun.com';
 const USERS_SHEET = 'Users';
 const REQUESTS_SHEET = 'Requests';
@@ -276,7 +291,7 @@ function setupThaiHeaders() {
  * ส่ง Email แจ้งเตือนไปยัง Admin เมื่อมีคำขอใหม่
  */
 function sendNewRequestNotification(requestData, userEmail, userName, userDept) {
-  const adminEmails = SUPER_ADMIN_EMAILS.concat(ADMIN_EMAILS || []);
+  const adminEmails = NOTIFY_EMAILS;
   if (adminEmails.length === 0) return;
   
   const subject = `📬 คำขอใหม่: ${requestData.projectName}`;
@@ -786,7 +801,7 @@ function emailShell(headline, subline, innerHtml) {
  * ไม่แยกส่งทีละงาน เพราะจะกินโควตาและกลายเป็นเมลขยะจนไม่มีใครอ่าน
  */
 function sendAdminDigest(data, now) {
-  const admins = SUPER_ADMIN_EMAILS.concat(ADMIN_EMAILS || []);
+  const admins = NOTIFY_EMAILS;
   if (admins.length === 0) return 0;
 
   const nOver = data.overdue.length;
