@@ -219,6 +219,13 @@ const Auth = {
             Pages.allRequests = [];
             Pages.allUsers = [];
             Pages.adminFilters = { search: '', status: '', service: '' };
+            /* ขึ้นรอบใหม่ก่อนล้าง เพื่อให้คำขอโหลดที่ยังค้างอยู่รู้ว่าตัวเองหมดอายุแล้ว
+               ไม่งั้นมันจะเขียนข้อมูลของคนก่อนกลับลงเครื่องหลังล้างไปแล้ว */
+            Pages._session++;
+            Pages._refreshPromise = null;
+            Pages._loadedAt = 0;
+            Pages.clearCache();          // ล้างข้อมูลที่เก็บไว้ในเครื่องด้วย
+            Pages.hideDataBanner();
         }
         Utils.showToast('ออกจากระบบเรียบร้อย', 'success');
         App.navigate('login');

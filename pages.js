@@ -32,17 +32,97 @@ const Pages = {
    *
    * ส่ง force = true เมื่อต้องการข้อมูลสดจริงๆ (เช่น หลังสร้างคำขอใหม่)
    */
+  /* คีย์ที่ใช้เก็บข้อมูลล่าสุดไว้ในเครื่องผู้ใช้ */
+  CACHE_KEY: 'jaun_data_cache',
+  /* เก่ากว่านี้ไม่เอามาแสดง เพราะอาจคลาดเคลื่อนจากของจริงมากเกินไป */
+  CACHE_MAX_AGE_MS: 12 * 60 * 60 * 1000,
+
+  /* คำขอโหลดที่กำลังทำงานอยู่ ใช้ให้ทุกที่รอตัวเดียวกัน ไม่ยิงซ้อน */
+  _refreshPromise: null,
+  /* เวลาที่ "ข้อมูลบนจอ" ถูกดึงมาจากเซิร์ฟเวอร์จริงๆ
+     แยกจาก _loadedAt เพราะการแก้ข้อมูลในเครื่อง (เช่น กดอนุมัติ) ต้องไม่ทำให้ตัวเลขนี้ใหม่ขึ้น
+     ไม่งั้นจะนับอายุข้อมูลผิดและเลี่ยงกำหนด 12 ชั่วโมงได้ */
+  _dataSavedAt: 0,
+  /* นับคำขอโหลดแต่ละครั้ง คำตอบที่มาถึงช้ากว่ารอบใหม่จะถูกทิ้ง */
+  _fetchSeq: 0,
+  /* นับการแก้ข้อมูลในเครื่อง คำตอบที่เริ่มดึงก่อนการแก้จะถูกทิ้ง ไม่ให้ทับงานที่เพิ่งทำ */
+  _mutationSeq: 0,
+  /* นับรอบการเข้าใช้งาน คำตอบที่ค้างข้ามการออกจากระบบจะถูกทิ้ง */
+  _session: 0,
+
+  /**
+   * โหลดข้อมูล
+   *
+   * ตอนเปิดหน้าใหม่หรือรีเฟรช ถ้าไม่มีอะไรในหน่วยความจำ ผู้ใช้ต้องนั่งรอ API
+   * ซึ่งวัดจริงวันที่ 5 ต.ค. 2569 ได้ตั้งแต่ 5 ถึง 73 วินาที (ข้อมูลโตเป็น 675 คำขอ ~686 KB)
+   * รอ 73 วินาทีหน้าขาวๆ คนจะคิดว่าระบบเสียแล้วปิดทิ้ง
+   *
+   * จึงเก็บผลที่โหลดสำเร็จครั้งล่าสุดไว้ในเครื่อง เปิดมาแสดงทันที
+   * แล้วค่อยดึงของใหม่เบื้องหลัง พร้อมบอกบนจอว่ากำลังอัปเดตอยู่
+   */
   async loadData(force = false) {
     const stillFresh = this._loadedAt && (Date.now() - this._loadedAt) < this.CACHE_TTL_MS;
     if (!force && stillFresh) return true;
+
+    /**
+     * ถ้ามีการดึงข้อมูลค้างอยู่แล้ว ให้รอตัวนั้น อย่าเริ่มใหม่
+     *
+     * สำคัญมาก: ระหว่างที่ดึงเบื้องหลัง ถ้าผู้ใช้กดเปลี่ยนหน้าหรือกดอนุมัติ
+     * โค้ดจะเข้ามาตรงนี้อีก ถ้าไม่ดักไว้จะยิงคำขอก้อน 686 KB ซ้อนเข้าไปอีกชุด
+     * ทำให้เซิร์ฟเวอร์ที่ช้าอยู่แล้วช้าลงไปอีก และผู้ใช้ก็ยังต้องนั่งรอเท่าเดิม
+     */
+    if (!force && this._refreshPromise) {
+      await this._refreshPromise;
+      return this.allRequests.length > 0;
+    }
+
+    if (!force && !this.allRequests.length) {
+      const savedAt = this.restoreCache();
+      if (savedAt) {
+        this.startBackgroundRefresh();
+        return true;
+      }
+    }
+
+    const ok = await this.fetchFromServer();
+    if (ok) return true;
+
+    // ถ้าเคยโหลดได้มาก่อน ใช้ข้อมูลเดิมต่อดีกว่าขึ้นจอ error
+    // (Apps Script ล้มเป็นครั้งคราว ข้อมูลเก่าไม่กี่นาทียังใช้งานได้)
+    if (this.allRequests.length > 0) {
+      this.showDataBanner(this._dataSavedAt, false);
+      return true;
+    }
+    return false;
+  },
+
+  /**
+   * ดึงข้อมูลจากเซิร์ฟเวอร์จริง คืน true เฉพาะตอนที่เอาข้อมูลมาใช้ได้จริง
+   *
+   * คำตอบจะถูกทิ้งถ้าระหว่างรอมีอะไรเปลี่ยนไปแล้ว เพราะข้อมูลที่ได้จะเก่ากว่าของที่มีอยู่
+   */
+  async fetchFromServer() {
+    const seq = ++this._fetchSeq;
+    const session = this._session;
+    const mutationAtStart = this._mutationSeq;
 
     try {
       // ส่ง email ไปให้เซิร์ฟเวอร์กรองข้อมูลให้ก่อน (ดู API.getAll)
       const me = Auth.getUser();
       const result = await API.getAll(me ? me.email : null);
+
+      if (session !== this._session) return false;        // ออกจากระบบไปแล้ว
+      if (seq !== this._fetchSeq) return false;            // มีรอบใหม่กว่าแซงไปแล้ว
+      if (mutationAtStart !== this._mutationSeq) {
+        // ผู้ใช้แก้ข้อมูลระหว่างรอ (เช่น กดอนุมัติ) ข้อมูลชุดนี้จึงเก่ากว่าของบนจอ
+        console.warn('ทิ้งข้อมูลที่ดึงมา เพราะผู้ใช้แก้ข้อมูลระหว่างรอ');
+        return false;
+      }
+
       this.allUsers = result.data.users || [];
       this.allRequests = result.data.requests || [];
       this._loadedAt = Date.now();
+      this._dataSavedAt = this._loadedAt;
 
       /**
        * เติมแผนกให้ session จากข้อมูลในชีต
@@ -59,20 +139,149 @@ const Pages = {
         }
       }
 
+      this.saveCache();
+      this.hideDataBanner();     // ได้ข้อมูลสดแล้ว ไม่ว่ามาจากทางไหน แถบต้องหายไป
       return true;
     } catch (error) {
       console.error('Load data error:', error);
-
-      // ถ้าเคยโหลดสำเร็จมาก่อน ให้ใช้ข้อมูลเดิมต่อไปดีกว่าขึ้นจอ error
-      // (Apps Script ล้มเป็นครั้งคราว ข้อมูลเก่าไม่กี่นาทียังใช้งานได้)
-      if (this.allRequests.length > 0) {
-        Utils.showToast('เชื่อมต่อไม่ได้ กำลังแสดงข้อมูลล่าสุดที่มีอยู่', 'warning');
-        return true;
-      }
-
-      Utils.showToast('ไม่สามารถโหลดข้อมูลได้: ' + error.message, 'error');
       return false;
     }
+  },
+
+  /**
+   * เก็บข้อมูลล่าสุดไว้ในเครื่อง
+   *
+   * ผูกกับอีเมลและบทบาทของผู้ใช้ เพราะพนักงานทั่วไปได้ข้อมูลเฉพาะของตัวเอง
+   * ถ้าเปลี่ยนคนใช้เครื่องเดียวกัน หรือคนเดิมถูกเลื่อนเป็นแอดมิน
+   * แล้วหยิบของเดิมมาแสดง จะเห็นข้อมูลผิดชุด
+   */
+  saveCache() {
+    const me = Auth.getUser();
+    if (!me) return;                 // ออกจากระบบแล้ว ห้ามเขียนทิ้งไว้ให้คนถัดไป
+    try {
+      localStorage.setItem(this.CACHE_KEY, JSON.stringify({
+        savedAt: this._dataSavedAt || Date.now(),
+        email: me.email,
+        role: me.role,
+        users: this.allUsers,
+        requests: this.allRequests
+      }));
+    } catch (e) {
+      // เต็มพื้นที่หรือเบราว์เซอร์ไม่ให้เก็บ ไม่ใช่เรื่องคอขาดบาดตาย ข้ามไป
+      console.warn('เก็บข้อมูลลงเครื่องไม่ได้:', e.message);
+    }
+  },
+
+  /** หยิบข้อมูลที่เก็บไว้มาใช้ คืนเวลาที่บันทึกไว้ถ้าใช้ได้ ไม่งั้นคืน null */
+  restoreCache() {
+    try {
+      const raw = localStorage.getItem(this.CACHE_KEY);
+      if (!raw) return null;
+      const c = JSON.parse(raw);
+      if (!c || !Array.isArray(c.requests) || !c.savedAt) return null;
+      if (Date.now() - c.savedAt > this.CACHE_MAX_AGE_MS) return null;
+
+      const me = Auth.getUser();
+      if (!me || me.email !== c.email || me.role !== c.role) return null;
+
+      this.allUsers = c.users || [];
+      this.allRequests = c.requests;
+      this._dataSavedAt = c.savedAt;
+      /* ข้อมูลชุดนี้คือสิ่งที่อยู่บนจอแล้ว อายุ 30 วินาทีจึงต้องนับให้ด้วย
+         ไม่งั้นการเปลี่ยนหน้าครั้งถัดไปจะไปเริ่มโหลดใหม่ทั้งที่เพิ่งแสดงไป */
+      this._loadedAt = Date.now();
+      return c.savedAt;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  clearCache() {
+    this._dataSavedAt = 0;
+    try { localStorage.removeItem(this.CACHE_KEY); } catch (e) { /* ไม่เป็นไร */ }
+  },
+
+  /**
+   * ดึงข้อมูลใหม่เบื้องหลังขณะที่ผู้ใช้ดูข้อมูลเก่าไปก่อน
+   *
+   * วาดหน้าใหม่เมื่อได้ข้อมูลแล้ว แต่เฉพาะตอนที่ผู้ใช้ยังอยู่หน้าเดิมและยังเป็นคนเดิม
+   * (navigate หน้าเดิมจะคงตำแหน่งเลื่อนและตัวกรองไว้ให้)
+   */
+  startBackgroundRefresh() {
+    if (this._refreshPromise) return this._refreshPromise;
+
+    const session = this._session;
+    const view = App.currentView;
+    const params = App.currentParams;
+    this.showDataBanner(this._dataSavedAt, true);
+
+    this._refreshPromise = this.fetchFromServer()
+      .then(ok => {
+        if (session !== this._session) return;      // ออกจากระบบระหว่างรอ อย่าไปยุ่งกับหน้าจอ
+        if (!ok) { this.showDataBanner(this._dataSavedAt, false); return; }
+        if (App.currentView === view) App.navigate(view, params);
+      })
+      .catch(() => {
+        if (session === this._session) this.showDataBanner(this._dataSavedAt, false);
+      })
+      .finally(() => { this._refreshPromise = null; });
+
+    return this._refreshPromise;
+  },
+
+  /** ผู้ใช้กดลองใหม่เองจากแถบแจ้งเตือน */
+  async retryRefresh() {
+    this.showDataBanner(this._dataSavedAt, true);    // คงแถบไว้ ไม่ให้จอว่างระหว่างรอ
+    const session = this._session;
+    const ok = await this.fetchFromServer();
+    if (session !== this._session) return;
+    if (ok) App.navigate(App.currentView, App.currentParams);
+    else {
+      this.showDataBanner(this._dataSavedAt, false);
+      Utils.showToast('ยังเชื่อมต่อไม่ได้ ลองอีกครั้งในอีกสักครู่', 'error');
+    }
+  },
+
+  /**
+   * แถบบอกว่าข้อมูลที่เห็นเป็นของเมื่อไหร่
+   *
+   * ต้องบอกให้ชัด เพราะแอดมินใช้หน้านี้ตัดสินใจอนุมัติงาน
+   * ถ้าไม่บอกเลยว่าข้อมูลเก่า เขาจะเข้าใจว่าเห็นสถานะล่าสุดเสมอ
+   */
+  showDataBanner(savedAt, refreshing) {
+    let bar = document.getElementById('data-banner');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'data-banner';
+      bar.setAttribute('role', 'status');
+      bar.setAttribute('aria-live', 'polite');
+      document.body.appendChild(bar);
+    }
+    bar.className = 'data-banner' + (refreshing ? '' : ' data-banner-warn');
+    bar.dataset.savedAt = String(savedAt || 0);
+    bar.dataset.refreshing = refreshing ? '1' : '0';
+    this.paintDataBanner();
+
+    /* ข้อความบอกอายุต้องเดินต่อเอง ไม่งั้นค้างอยู่ที่ "เมื่อครู่นี้" ทั้งที่ผ่านไปครึ่งชั่วโมงแล้ว */
+    clearInterval(this._bannerTimer);
+    this._bannerTimer = setInterval(() => this.paintDataBanner(), 30000);
+  },
+
+  paintDataBanner() {
+    const bar = document.getElementById('data-banner');
+    if (!bar) { clearInterval(this._bannerTimer); return; }
+    const savedAt = Number(bar.dataset.savedAt) || 0;
+    const ago = savedAt ? Utils.timeAgoTh(savedAt) : '';
+    bar.innerHTML = bar.dataset.refreshing === '1'
+      ? `<span class="data-banner-dot"></span> แสดงข้อมูลที่บันทึกไว้${ago} · กำลังดึงข้อมูลล่าสุด`
+      : `${Icons.get('alert')} อัปเดตข้อมูลไม่สำเร็จ สิ่งที่เห็นเป็นข้อมูล${ago}
+         <button class="btn btn-sm btn-secondary" onclick="Pages.retryRefresh()">ลองใหม่</button>`;
+  },
+
+  hideDataBanner() {
+    clearInterval(this._bannerTimer);
+    const bar = document.getElementById('data-banner');
+    if (bar) bar.remove();
   },
 
   /**
@@ -121,6 +330,13 @@ const Pages = {
   patchRequest(requestId, changes) {
     const request = this.allRequests.find(r => r.id === requestId);
     if (request) Object.assign(request, changes);
+    /* บอกให้คำขอโหลดที่ค้างอยู่รู้ว่าข้อมูลบนจอใหม่กว่าของที่มันกำลังดึงมา
+       ไม่งั้นข้อมูลเก่าที่มาถึงทีหลังจะทับงานที่เพิ่งอนุมัติไป */
+    this._mutationSeq++;
+    // อัปเดตสำเนาในเครื่องด้วย ไม่งั้นถ้ารีเฟรชหน้าทันที
+    // จะเห็นงานที่เพิ่งอนุมัติกลับไปเป็นสถานะเดิมจนกว่าจะดึงข้อมูลใหม่เสร็จ
+    // (saveCache คงเวลาที่ดึงข้อมูลจริงไว้ ไม่นับว่าข้อมูลสดขึ้นเพราะการแก้ในเครื่อง)
+    this.saveCache();
   },
 
   /**
@@ -128,6 +344,8 @@ const Pages = {
    */
   removeRequestLocally(requestId) {
     this.allRequests = this.allRequests.filter(r => r.id !== requestId);
+    this._mutationSeq++;
+    this.saveCache();
   },
 
   /**

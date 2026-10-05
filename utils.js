@@ -174,6 +174,21 @@ const Utils = {
     },
 
     /**
+     * บอกว่านานแค่ไหนมาแล้ว แบบอ่านง่าย เช่น "เมื่อ 5 นาทีที่แล้ว"
+     * ใช้กับแถบบอกว่าข้อมูลที่เห็นเป็นของเมื่อไหร่
+     */
+    timeAgoTh(ts) {
+        const diff = Date.now() - ts;
+        if (!isFinite(diff) || diff < 0) return '';
+        const min = Math.floor(diff / 60000);
+        if (min < 1) return ' เมื่อครู่นี้';
+        if (min < 60) return ` เมื่อ ${min} นาทีที่แล้ว`;
+        const hr = Math.floor(min / 60);
+        if (hr < 24) return ` เมื่อ ${hr} ชั่วโมงที่แล้ว`;
+        return ` เมื่อ ${Math.floor(hr / 24)} วันที่แล้ว`;
+    },
+
+    /**
      * Format วันที่เป็นภาษาไทย
      */
     formatDate(dateString) {

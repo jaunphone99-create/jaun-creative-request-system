@@ -2016,3 +2016,78 @@ a:hover {
 }
 
 .loading-hint:empty { display: none; }
+
+/* ---------- แถบบอกว่าข้อมูลที่เห็นเป็นของเมื่อไหร่ ----------
+   ลอยอยู่ล่างจอ ไม่ดันเนื้อหาที่ผู้ใช้กำลังอ่านอยู่ */
+.data-banner {
+  position: fixed;
+  /* ใช้ left/right คู่กันแล้วจัดกลางด้วย margin
+     ถ้าใช้ left:50% ความกว้างสูงสุดจะเหลือแค่ครึ่งจอ บนมือถือแถบจะกลายเป็นก้อนสูงแคบ */
+  left: 16px;
+  right: 16px;
+  width: max-content;
+  margin: 0 auto;
+  bottom: 16px;
+  z-index: 2500;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  background: var(--jaun-navy);
+  color: var(--jaun-white);
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-md);
+  overflow-wrap: anywhere;
+}
+
+/* อัปเดตไม่สำเร็จ ใช้พื้นส้มเข้มให้ต่างจากสถานะกำลังทำงาน
+   ไม่ใช้ --jaun-orange-dark (#C35608) เพราะกับตัวหนังสือขาวได้แค่ 4.36:1 ไม่ถึงเกณฑ์ 4.5:1
+   โทนนี้วัดได้ 5.3:1 ผ่านโดยมีระยะเผื่อ */
+.data-banner-warn { background: #AD4C07; }
+
+.data-banner .icon { width: 1rem; height: 1rem; flex-shrink: 0; }
+
+.data-banner .btn {
+  background: var(--jaun-white);
+  color: var(--jaun-navy);
+  border: 0;
+  flex-shrink: 0;
+}
+
+/* จุดกะพริบบอกว่ากำลังดึงข้อมูลอยู่ */
+.data-banner-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--radius-full);
+  background: var(--jaun-orange);
+  flex-shrink: 0;
+  animation: data-banner-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes data-banner-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+/* ผู้ใช้ที่ตั้งค่าลดการเคลื่อนไหวไม่ควรเห็นอะไรกะพริบ */
+@media (prefers-reduced-motion: reduce) {
+  .data-banner-dot { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .data-banner { bottom: 10px; font-size: 0.8rem; padding: 9px 13px; }
+}
+
+/* ---------- กันข้อความยาวไม่มีช่องว่างดันหน้าให้กว้างเกินจอ ----------
+   พนักงานวางลิงก์ Google Drive/Docs ลงช่องรายละเอียดบ่อย ลิงก์พวกนี้ยาว 70-100 ตัวอักษร
+   และไม่มีจุดให้ตัดบรรทัด เบราว์เซอร์จึงยืดหน้าออกไปจนต้องเลื่อนซ้ายขวา
+   (วัดได้ว่าลิงก์เดียวดันหน้าจาก 375px เป็น 862px) */
+.request-card,
+.request-details,
+.request-details p,
+.request-meta {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
